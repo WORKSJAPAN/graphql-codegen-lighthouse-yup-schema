@@ -30,7 +30,7 @@ export class YupSchemaVisitor implements SchemaVisitor {
   private enumDeclarations: string[] = [];
 
   constructor(
-    private readonly schema: GraphQLSchema,
+    schema: GraphQLSchema,
     private readonly config: ValidationSchemaPluginConfig
   ) {
     this.visitorFactory = new VisitorFactory(schema, config);
