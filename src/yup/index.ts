@@ -13,7 +13,7 @@ import {
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, GeneratedCodesForDirectives } from '../directive';
-import { BaseSchemaVisitor } from '../schema_visitor';
+import { SchemaVisitor } from '../types';
 import { Visitor } from '../visitor';
 import { VisitorFactory } from '../VisitorFactory';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
@@ -22,17 +22,39 @@ import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 
-export class YupSchemaVisitor extends BaseSchemaVisitor {
+export class YupSchemaVisitor implements SchemaVisitor {
   private exportTypeStrategy: ExportTypeStrategy;
   private enumExportStrategy: EnumDeclarationStrategy;
   private visitorFactory: VisitorFactory;
+  private importTypes: string[] = [];
+  private enumDeclarations: string[] = [];
 
-  constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
-    super(schema, config);
-
+  constructor(
+    private readonly schema: GraphQLSchema,
+    private readonly config: ValidationSchemaPluginConfig
+  ) {
     this.visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.createVisitor('both'));
+  }
+
+  buildImports(): string[] {
+    if (this.config.importFrom && this.importTypes.length > 0) {
+      return [
+        this.importValidationSchema(),
+        `import ${this.config.useTypeImports ? 'type ' : ''}{ ${this.importTypes.join(', ')} } from '${
+          this.config.importFrom
+        }'`,
+      ];
+    }
+    return [this.importValidationSchema()];
+  }
+
+  protected buildObjectTypeDefinitionArguments(node: ObjectTypeDefinitionNode, visitor: Visitor) {
+    return visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
+      this.importTypes.push(typeName);
+      return this.buildInputFields(field.arguments ?? [], visitor, typeName);
+    });
   }
 
   createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
