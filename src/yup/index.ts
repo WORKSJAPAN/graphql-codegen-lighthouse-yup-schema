@@ -44,13 +44,6 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     return this.importBuilder.build();
   }
 
-  protected buildObjectTypeDefinitionArguments(node: ObjectTypeDefinitionNode, visitor: Visitor) {
-    return visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
-      this.importBuilder.registerType(typeName);
-      return this.buildInputFields(field.arguments ?? [], visitor, typeName);
-    });
-  }
-
   createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
     return this.visitorFactory.createVisitor(scalarDirection);
   }
@@ -92,7 +85,10 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
         this.importBuilder.registerType(name);
 
         // Building schema for field arguments.
-        const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
+        const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
+          this.importBuilder.registerType(typeName);
+          return this.buildInputFields(field.arguments ?? [], visitor, typeName);
+        });
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
