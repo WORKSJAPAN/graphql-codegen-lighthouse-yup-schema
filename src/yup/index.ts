@@ -16,10 +16,16 @@ import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
+import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
+  private exportTypeStrategy: ExportTypeStrategy;
+
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+
+    this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
   }
 
   importValidationSchema(): string {
@@ -68,47 +74,15 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
-        const shape = node.fields
-          ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-          })
-          .join(',\n');
+        const shape =
+          node.fields
+            ?.map(field => {
+              const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
+              return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+            })
+            .join(',\n') ?? '';
 
-        switch (this.config.validationSchemaExportType) {
-          case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
-                .withContent(
-                  [
-                    `yup.object({`,
-                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-                    shape,
-                    '}).strict()',
-                  ].join('\n')
-                ).string + appendArguments
-            );
-
-          case 'function':
-          default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-                .withBlock(
-                  [
-                    indent(`return yup.object({`),
-                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-                    shape,
-                    indent('}).strict()'),
-                  ].join('\n')
-                ).string + appendArguments
-            );
-        }
+        return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shape, appendArguments);
       }),
     };
   }
@@ -166,34 +140,12 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           ?.map(t => {
             const element = visitor.convertName(t.name.value);
             const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition') {
-              return `${element}Schema`;
-            }
-            switch (this.config.validationSchemaExportType) {
-              case 'const':
-                return `${element}Schema`;
-              case 'function':
-              default:
-                return `${element}Schema()`;
-            }
+
+            return this.exportTypeStrategy.schemaEvaluation(`${element}Schema`, typ?.astNode?.kind);
           })
           .join(', ');
 
-        switch (this.config.validationSchemaExportType) {
-          case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${unionName}Schema: yup.MixedSchema<${unionName}>`)
-              .withContent(`union<${unionName}>(${unionElements})`).string;
-          case 'function':
-          default:
-            return new DeclarationBlock({})
-              .export()
-              .asKind('function')
-              .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
-              .withBlock(indent(`return union<${unionName}>(${unionElements})`)).string;
-        }
+        return this.exportTypeStrategy.unionTypeDefinition(unionName, unionElements);
       },
     };
   }
@@ -210,22 +162,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
       })
       .join(',\n');
 
-    switch (this.config.validationSchemaExportType) {
-      case 'const':
-        return new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
-          .withContent(['yup.object({', shape, '}).strict()'].join('\n')).string;
-
-      case 'function':
-      default:
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('}).strict()')].join('\n')).string;
-    }
+    return this.exportTypeStrategy.buildInputFields(shape, name);
   }
 }
 
@@ -289,16 +226,11 @@ const generateNameNodeYupSchema = (config: ValidationSchemaPluginConfig, visitor
     case 'InputObjectTypeDefinition':
     case 'ObjectTypeDefinition':
     case 'UnionTypeDefinition':
-      // using switch-case rather than if-else to allow for future expansion
-      switch (config.validationSchemaExportType) {
-        case 'const':
-          return `${converter.convertName()}Schema`;
-        case 'function':
-        default:
-          return `${converter.convertName()}Schema()`;
-      }
     case 'EnumTypeDefinition':
-      return `${converter.convertName()}Schema`;
+      return createExportTypeStrategy(config.validationSchemaExportType).schemaEvaluation(
+        `${converter.convertName()}Schema`,
+        converter?.targetKind
+      );
     default:
       return yup4Scalar(config, visitor, node.value);
   }
