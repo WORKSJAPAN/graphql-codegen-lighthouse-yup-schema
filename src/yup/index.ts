@@ -23,6 +23,8 @@ import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
+import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
+import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private exportTypeStrategy: ExportTypeStrategy;
@@ -30,6 +32,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private visitorFactory: VisitorFactory;
   private importBuilder: ImportBuilder;
   private initialEmitter: InitialEmitter;
+  private withObjectTypesSpec: WithObjectTypesSpec;
 
   constructor(
     schema: GraphQLSchema,
@@ -40,6 +43,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.visitorFactory.createVisitor('both'));
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
     this.initialEmitter = new InitialEmitter(config.withObjectType);
+    this.withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
   }
 
   buildImports(): string[] {
@@ -63,7 +67,9 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+      leave: (node: ObjectTypeDefinitionNode) => {
+        if (!this.withObjectTypesSpec.shouldBeUsed(node)) return;
+
         const visitor = this.visitorFactory.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         this.importBuilder.registerType(name);
@@ -85,7 +91,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
             .join(',\n') ?? '';
 
         return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shape, appendArguments);
-      }),
+      },
     };
   }
 
