@@ -11,12 +11,6 @@ export class ImportBuilder {
     this.types.push(type);
   }
 
-  registerTypesForDev(types: readonly string[]): void {
-    for (const type of types) {
-      this.registerType(type);
-    }
-  }
-
   build(): string[] {
     if (!this.importFrom || this.types.length === 0) return [IMPORT_STATEMENT_YUP];
 
