@@ -13,7 +13,7 @@ import {
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, GeneratedCodesForDirectives } from '../directive';
-import { SchemaVisitor } from '../types';
+import { Interpreter, NewVisitor } from '../types';
 import { Visitor } from '../visitor';
 import { VisitorFactory } from '../VisitorFactory';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
@@ -22,7 +22,7 @@ import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 
-export class YupSchemaVisitor implements SchemaVisitor {
+export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private exportTypeStrategy: ExportTypeStrategy;
   private enumExportStrategy: EnumDeclarationStrategy;
   private visitorFactory: VisitorFactory;
