@@ -1,4 +1,4 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { indent } from '@graphql-codegen/visitor-plugin-common';
 import {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -22,13 +22,14 @@ import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ImportBuilder } from './ImportBuilder';
+import { InitialEmitter } from './InitialEmitter';
 
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private exportTypeStrategy: ExportTypeStrategy;
   private enumExportStrategy: EnumDeclarationStrategy;
   private visitorFactory: VisitorFactory;
-  private enumDeclarations: string[] = [];
   private importBuilder: ImportBuilder;
+  private initialEmitter: InitialEmitter;
 
   constructor(
     schema: GraphQLSchema,
@@ -38,6 +39,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.visitorFactory.createVisitor('both'));
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
+    this.initialEmitter = new InitialEmitter(config.withObjectType);
   }
 
   buildImports(): string[] {
@@ -45,21 +47,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   }
 
   initialEmit(): string {
-    if (!this.config.withObjectType) return '\n' + this.enumDeclarations.join('\n');
-    return '\n' + this.enumDeclarations.join('\n') + '\n' + this.unionFunctionDeclaration();
-  }
-
-  private unionFunctionDeclaration(): string {
-    return new DeclarationBlock({})
-      .asKind('function')
-      .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
-      .withBlock(
-        [
-          indent('return yup.mixed<T>().test({'),
-          indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-          indent('}).defined()'), // HACK: 型を合わせるために、union は undefined を許容しないこととした。問題が出たら考える。
-        ].join('\n')
-      ).string;
+    return this.initialEmitter.emit();
   }
 
   get InputObjectTypeDefinition() {
@@ -108,7 +96,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
         const enumName = visitor.convertName(node.name.value);
         const enumDeclaration = this.enumExportStrategy.enumDeclaration(enumName, node.values ?? []);
         this.importBuilder.registerType(enumName);
-        this.enumDeclarations.push(enumDeclaration);
+        this.initialEmitter.registerEnumDeclaration(enumDeclaration);
       },
     };
   }
