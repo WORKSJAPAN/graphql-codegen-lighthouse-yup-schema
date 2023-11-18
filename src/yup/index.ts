@@ -21,6 +21,7 @@ import { EnumDeclarationStrategy } from './enumDeclarationStrategy/EnumDeclarati
 import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
+import { ImportBuilder } from './ImportBuilder';
 
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private exportTypeStrategy: ExportTypeStrategy;
@@ -28,6 +29,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private visitorFactory: VisitorFactory;
   private importTypes: string[] = [];
   private enumDeclarations: string[] = [];
+  private importBuilder: ImportBuilder;
 
   constructor(
     schema: GraphQLSchema,
@@ -36,18 +38,12 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.createVisitor('both'));
+    this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
   }
 
   buildImports(): string[] {
-    if (this.config.importFrom && this.importTypes.length > 0) {
-      return [
-        this.importValidationSchema(),
-        `import ${this.config.useTypeImports ? 'type ' : ''}{ ${this.importTypes.join(', ')} } from '${
-          this.config.importFrom
-        }'`,
-      ];
-    }
-    return [this.importValidationSchema()];
+    this.importBuilder.registerTypesForDev(this.importTypes);
+    return this.importBuilder.build();
   }
 
   protected buildObjectTypeDefinitionArguments(node: ObjectTypeDefinitionNode, visitor: Visitor) {
@@ -59,9 +55,6 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
   createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
     return this.visitorFactory.createVisitor(scalarDirection);
-  }
-  importValidationSchema(): string {
-    return `import * as yup from 'yup'`;
   }
 
   initialEmit(): string {
