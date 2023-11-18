@@ -3,19 +3,15 @@ import { FieldDefinitionNode, GraphQLSchema, InputValueDefinitionNode, ObjectTyp
 import { ValidationSchemaPluginConfig } from './config';
 import { SchemaVisitor } from './types';
 import { Visitor } from './visitor';
-import { VisitorFactory } from './VisitorFactory';
 
 export abstract class BaseSchemaVisitor implements SchemaVisitor {
   protected importTypes: string[] = [];
   protected enumDeclarations: string[] = [];
-  private visitorFactory: VisitorFactory;
 
   protected constructor(
     protected schema: GraphQLSchema,
     protected config: ValidationSchemaPluginConfig
-  ) {
-    this.visitorFactory = new VisitorFactory(schema, config);
-  }
+  ) {}
 
   abstract importValidationSchema(): string;
 
@@ -32,10 +28,6 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
   }
 
   abstract initialEmit(): string;
-
-  createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
-    return this.visitorFactory.createVisitor(scalarDirection);
-  }
 
   protected abstract buildInputFields(
     fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],

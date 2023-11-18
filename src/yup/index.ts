@@ -15,6 +15,7 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
+import { VisitorFactory } from '../VisitorFactory';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
 import { EnumDeclarationStrategy } from './enumDeclarationStrategy/EnumDeclarationStrategy';
 import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
@@ -24,14 +25,19 @@ import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   private exportTypeStrategy: ExportTypeStrategy;
   private enumExportStrategy: EnumDeclarationStrategy;
+  private visitorFactory: VisitorFactory;
 
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
 
+    this.visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.createVisitor('both'));
   }
 
+  createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
+    return this.visitorFactory.createVisitor(scalarDirection);
+  }
   importValidationSchema(): string {
     return `import * as yup from 'yup'`;
   }

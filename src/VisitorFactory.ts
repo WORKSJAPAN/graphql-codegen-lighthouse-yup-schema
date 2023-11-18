@@ -5,8 +5,8 @@ import { Visitor } from './visitor';
 
 export class VisitorFactory {
   public constructor(
-    protected schema: GraphQLSchema,
-    protected config: ValidationSchemaPluginConfig
+    private schema: GraphQLSchema,
+    private config: ValidationSchemaPluginConfig
   ) {}
 
   public createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
