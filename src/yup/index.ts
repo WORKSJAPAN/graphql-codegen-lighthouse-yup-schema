@@ -36,16 +36,12 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   ) {
     this.visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
-    this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.createVisitor('both'));
+    this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.visitorFactory.createVisitor('both'));
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
   }
 
   buildImports(): string[] {
     return this.importBuilder.build();
-  }
-
-  createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
-    return this.visitorFactory.createVisitor(scalarDirection);
   }
 
   initialEmit(): string {
@@ -69,7 +65,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   get InputObjectTypeDefinition() {
     return {
       leave: (node: InputObjectTypeDefinitionNode) => {
-        const visitor = this.createVisitor('input');
+        const visitor = this.visitorFactory.createVisitor('input');
         const name = visitor.convertName(node.name.value);
         this.importBuilder.registerType(name);
         return this.buildInputFields(node.fields ?? [], visitor, name);
@@ -80,7 +76,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   get ObjectTypeDefinition() {
     return {
       leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-        const visitor = this.createVisitor('output');
+        const visitor = this.visitorFactory.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         this.importBuilder.registerType(name);
 
@@ -108,7 +104,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   get EnumTypeDefinition() {
     return {
       leave: (node: EnumTypeDefinitionNode) => {
-        const visitor = this.createVisitor('both');
+        const visitor = this.visitorFactory.createVisitor('both');
         const enumName = visitor.convertName(node.name.value);
         const enumDeclaration = this.enumExportStrategy.enumDeclaration(enumName, node.values ?? []);
         this.importBuilder.registerType(enumName);
@@ -121,7 +117,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     return {
       leave: (node: UnionTypeDefinitionNode) => {
         if (!node.types || !this.config.withObjectType) return;
-        const visitor = this.createVisitor('output');
+        const visitor = this.visitorFactory.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
         this.importBuilder.registerType(unionName);
