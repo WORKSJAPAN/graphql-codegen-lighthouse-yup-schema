@@ -16,16 +16,20 @@ import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import { EnumDeclarationStrategy } from './enumDeclarationStrategy/EnumDeclarationStrategy';
+import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   private exportTypeStrategy: ExportTypeStrategy;
+  private enumExportStrategy: EnumDeclarationStrategy;
 
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
 
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
+    this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.createVisitor('both'));
   }
 
   importValidationSchema(): string {
@@ -90,38 +94,10 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     return {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
-        const enumname = visitor.convertName(node.name.value);
-        this.importTypes.push(enumname);
-
-        // hoise enum declarations
-        if (this.config.enumsAsTypes) {
-          const enums = node.values?.map(enumOption => `'${enumOption.name.value}'`);
-
-          this.enumDeclarations.push(
-            new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${enumname}Schema`)
-              .withContent(`yup.string().oneOf([${enums?.join(', ')}])`).string
-          );
-        } else {
-          const values = node.values
-            ?.map(
-              enumOption =>
-                `${enumname}.${visitor.convertName(enumOption.name, {
-                  useTypesPrefix: false,
-                  transformUnderscore: true,
-                })}`
-            )
-            .join(', ');
-          this.enumDeclarations.push(
-            new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumname}>().oneOf([${values}])`).string
-          );
-        }
+        const enumName = visitor.convertName(node.name.value);
+        const enumDeclaration = this.enumExportStrategy.enumDeclaration(enumName, node.values ?? []);
+        this.importTypes.push(enumName);
+        this.enumDeclarations.push(enumDeclaration);
       },
     };
   }
