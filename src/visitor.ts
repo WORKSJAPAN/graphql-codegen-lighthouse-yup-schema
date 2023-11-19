@@ -18,7 +18,7 @@ export class Visitor extends TsVisitor {
   }
 
   public getNameNodeConverter(node: NameNode) {
-    const typ = this.schema.getType(node.value);
+    const typ = this.getType(node.value);
     const astNode = typ?.astNode;
     if (astNode === undefined || astNode === null) {
       return undefined;
