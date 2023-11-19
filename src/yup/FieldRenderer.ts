@@ -11,9 +11,9 @@ import {
 import { ValidationSchemaPluginConfig } from '../config';
 import { isInput, isListType, isNamedType, isNonNullType, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
-import { Field } from './ast/Field';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
+import { Field } from './renderable/Field';
 import { ScalarRenderer } from './ScalarRenderer';
 
 type RenderResult = {
@@ -56,9 +56,10 @@ export class FieldRenderer {
     };
   }
 
+  // temporarily public
   // NonNull がネストすることはない
   // NonNull をどうレンダリングするかは子の型によって変わる
-  private withNonNull(
+  public withNonNull(
     innerTypeNode: ListTypeNode | NamedTypeNode,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): RenderResult {
