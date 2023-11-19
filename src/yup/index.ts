@@ -43,7 +43,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       exportTypeStrategy
     );
     this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(
-      config,
+      config.enumsAsTypes,
       this.registry,
       visitorFactory.createVisitor('both')
     );

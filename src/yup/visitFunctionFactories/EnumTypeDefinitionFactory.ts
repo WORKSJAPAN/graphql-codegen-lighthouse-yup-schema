@@ -1,29 +1,71 @@
+import { DeclarationBlock } from '@graphql-codegen/visitor-plugin-common';
 import { EnumTypeDefinitionNode } from 'graphql';
 
-import { ValidationSchemaPluginConfig } from '../../config';
 import { Visitor } from '../../visitor';
-import { EnumDeclarationStrategy } from '../enumDeclarationStrategy/EnumDeclarationStrategy';
-import { createEnumDeclarationStrategy } from '../enumDeclarationStrategy/factory';
 import { Registry } from '../registry';
 import { VisitFunctionFactory } from './types';
 
-export class EnumTypeDefinitionFactory implements VisitFunctionFactory<EnumTypeDefinitionNode> {
-  private readonly enumDeclarationStrategy: EnumDeclarationStrategy;
+type RenderResult = {
+  enumName: string;
+  enumDeclaration: string;
+};
 
+export class EnumTypeDefinitionFactory implements VisitFunctionFactory<EnumTypeDefinitionNode> {
   constructor(
-    config: ValidationSchemaPluginConfig,
+    private readonly enumsAsType: boolean = false,
     private readonly registry: Registry,
     private readonly visitor: Visitor
-  ) {
-    this.enumDeclarationStrategy = createEnumDeclarationStrategy(config.enumsAsTypes, this.visitor);
-  }
+  ) {}
 
   create() {
     return (node: EnumTypeDefinitionNode) => {
-      const enumName = this.visitor.convertName(node.name.value);
-      const enumDeclaration = this.enumDeclarationStrategy.enumDeclaration(enumName, node.values ?? []);
+      const { enumName, enumDeclaration } = this.render(node);
       this.registry.registerType(enumName);
       this.registry.registerEnumDeclaration(enumDeclaration);
+    };
+  }
+
+  private render(node: EnumTypeDefinitionNode): RenderResult {
+    return this.enumsAsType ? this.renderAsType(node) : this.renderAsConst(node);
+  }
+
+  private renderAsType(node: EnumTypeDefinitionNode): RenderResult {
+    const enumName = this.visitor.convertName(node.name.value);
+    const enums = (node.values ?? []).map(enumOption => `'${enumOption.name.value}'`);
+
+    const enumDeclaration = new DeclarationBlock({})
+      .export()
+      .asKind('const')
+      .withName(`${enumName}Schema`)
+      .withContent(`yup.string().oneOf([${enums.join(', ')}])`).string;
+
+    return {
+      enumName,
+      enumDeclaration,
+    };
+  }
+
+  private renderAsConst(node: EnumTypeDefinitionNode): RenderResult {
+    const enumName = this.visitor.convertName(node.name.value);
+    const values = (node.values ?? [])
+      .map(
+        enumOption =>
+          `${enumName}.${this.visitor.convertName(enumOption.name, {
+            useTypesPrefix: false,
+            transformUnderscore: true,
+          })}`
+      )
+      .join(', ');
+
+    const enumDeclaration = new DeclarationBlock({})
+      .export()
+      .asKind('const')
+      .withName(`${enumName}Schema`)
+      .withContent(`yup.string<${enumName}>().oneOf([${values}])`).string;
+
+    return {
+      enumName,
+      enumDeclaration,
     };
   }
 }
