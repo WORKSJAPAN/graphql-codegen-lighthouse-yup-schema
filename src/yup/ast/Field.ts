@@ -1,7 +1,8 @@
 import { indent } from '@graphql-codegen/visitor-plugin-common';
-import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
+import { FieldDefinitionNode, InputValueDefinitionNode, TypeNode } from 'graphql';
 
-import { DirectiveRenderer } from '../DirectiveRenderer';
+import { isNonNullType } from '../../graphql';
+import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRenderer';
 import { FieldRenderer } from '../FieldRenderer';
 
 export class Field {
@@ -16,8 +17,15 @@ export class Field {
       this.field.name.value,
       this.field.directives ?? []
     );
-    const gen = this.fieldRenderer.renderTopLevelField(this.field.type, generatedCodesForDirectives);
+    const gen = this.renderTopLevelField(this.field.type, generatedCodesForDirectives);
     // TODO: ここで特定のディレクティブの有無によりlazyを入れる
     return indent(`${this.field.name.value}: ${gen}`, 2);
+  }
+
+  // temporarily public
+  private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+    const { isLazy, rendered } = this.fieldRenderer.handleAllType(typeNode, generatedCodesForDirectives);
+    const maybeLazy = isLazy ? this.fieldRenderer.renderLazy(rendered) : rendered;
+    return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
   }
 }

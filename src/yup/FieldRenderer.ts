@@ -39,13 +39,7 @@ export class FieldRenderer {
   }
 
   // temporarily public
-  public renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    const { isLazy, rendered } = this.handleAllType(typeNode, generatedCodesForDirectives);
-    const maybeLazy = isLazy ? this.renderLazy(rendered) : rendered;
-    return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
-  }
-
-  private handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): RenderResult {
+  public handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): RenderResult {
     if (isListType(typeNode)) {
       return this.renderList(typeNode.type, false, generatedCodesForDirectives);
     }
@@ -150,7 +144,8 @@ export class FieldRenderer {
     return isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
   }
 
-  private renderLazy(schema: string): string {
+  // temporarily public
+  public renderLazy(schema: string): string {
     return `yup.lazy(() => ${schema})`;
   }
 
