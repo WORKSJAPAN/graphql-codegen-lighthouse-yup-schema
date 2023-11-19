@@ -7,15 +7,14 @@ import { Renderable } from './Renderable';
 export class NamedType implements Renderable {
   constructor(
     readonly fieldRenderer: FieldRenderer,
-    readonly fieldMetadata: FieldMetadata,
     readonly namedTypeNode: NamedTypeNode,
     readonly isNonNull: boolean
   ) {}
 
-  public render() {
+  public render(fieldMetadata: FieldMetadata) {
     const gen =
       this.fieldRenderer.generateNameNodeYupSchema(this.namedTypeNode.name) +
-      this.fieldMetadata.getGeneratedCodesForDirectives().rules;
+      fieldMetadata.getGeneratedCodesForDirectives().rules;
     if (this.isNonNull) {
       return this.fieldRenderer.shouldEmitAsNotAllowEmptyString(this.namedTypeNode.name.value)
         ? `${gen}.defined().required()`

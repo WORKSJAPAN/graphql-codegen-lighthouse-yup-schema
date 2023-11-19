@@ -26,11 +26,12 @@ export class Field {
   }
 
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    const nodeFactory = new NodeFactory(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives));
+    const nodeFactory = new NodeFactory(this.fieldRenderer);
     const node = nodeFactory.create(typeNode);
+    const fieldMetadata = new FieldMetadata(generatedCodesForDirectives);
 
-    const rendered = node.render();
-    const isLazy = node.shouldBeLazy();
+    const rendered = node.render(fieldMetadata);
+    const isLazy = node.shouldBeLazy(fieldMetadata);
     const maybeLazy = isLazy ? renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
   }

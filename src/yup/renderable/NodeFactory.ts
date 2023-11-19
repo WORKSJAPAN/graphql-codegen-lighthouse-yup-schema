@@ -2,17 +2,13 @@ import { ListTypeNode, NamedTypeNode, TypeNode } from 'graphql';
 
 import { isListType, isNamedType, isNonNullType } from '../../graphql';
 import { FieldRenderer } from '../FieldRenderer';
-import { FieldMetadata } from './FieldMetadata';
 import { ListType } from './ListType';
 import { NamedType } from './NamedType';
 import { NullRenderable } from './NullRenderer';
 import { Renderable } from './Renderable';
 
 export class NodeFactory {
-  constructor(
-    private readonly fieldRenderer: FieldRenderer,
-    private readonly fieldMetadata: FieldMetadata
-  ) {}
+  constructor(private readonly fieldRenderer: FieldRenderer) {}
 
   public create(typeNode: TypeNode): Renderable {
     if (isNonNullType(typeNode)) {
@@ -23,10 +19,10 @@ export class NodeFactory {
 
   private helper(typeNode: ListTypeNode | NamedTypeNode, isNonNull: boolean): Renderable {
     if (isListType(typeNode)) {
-      return new ListType(this.fieldRenderer, this.fieldMetadata, this.create(typeNode.type), isNonNull);
+      return new ListType(this.fieldRenderer, this.create(typeNode.type), isNonNull);
     }
     if (isNamedType(typeNode)) {
-      return new NamedType(this.fieldRenderer, this.fieldMetadata, typeNode, isNonNull);
+      return new NamedType(this.fieldRenderer, typeNode, isNonNull);
     }
     return new NullRenderable(typeNode);
   }

@@ -1,4 +1,6 @@
+import { FieldMetadata } from './FieldMetadata';
+
 export interface Renderable {
-  render(): string;
-  shouldBeLazy(): boolean;
+  render(fieldMetadata: FieldMetadata): string;
+  shouldBeLazy(fieldMetadata: FieldMetadata): boolean;
 }
