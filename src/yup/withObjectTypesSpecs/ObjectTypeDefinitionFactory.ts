@@ -8,17 +8,22 @@ import { Visitor } from '../../visitor';
 import { ExportTypeStrategy } from '../exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from '../exportTypeStrategies/factory';
 import { Registry } from '../registry';
+import { ScalarRenderer } from '../ScalarRenderer';
 import { VisitFunctionFactory } from '../visitFunctionFactories/types';
 import { WithObjectTypesSpec } from './WithObjectTypesSpec';
 
 export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectTypeDefinitionNode> {
+  private readonly scalarRenderer: ScalarRenderer;
+
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly registry: Registry,
     private readonly visitor: Visitor,
     private readonly withObjectTypesSpec: WithObjectTypesSpec,
     private readonly exportTypeStrategy: ExportTypeStrategy
-  ) {}
+  ) {
+    this.scalarRenderer = new ScalarRenderer(config.scalarSchemas ?? {}, visitor);
+  }
 
   create() {
     return (node: ObjectTypeDefinitionNode) => {
@@ -117,7 +122,7 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
           converter?.targetKind
         );
       default:
-        return this.yup4Scalar(node.value);
+        return this.scalarRenderer.render(node.value);
     }
   }
 
@@ -128,21 +133,4 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
     }
     return schema;
   }
-
-  private yup4Scalar = (scalarName: string): string => {
-    if (this.config.scalarSchemas?.[scalarName]) {
-      return `${this.config.scalarSchemas[scalarName]}`;
-    }
-    const tsType = this.visitor.getScalarType(scalarName);
-    switch (tsType) {
-      case 'string':
-        return `yup.string()`;
-      case 'number':
-        return `yup.number()`;
-      case 'boolean':
-        return `yup.boolean()`;
-    }
-    console.warn('unhandled name:', scalarName);
-    return `yup.mixed()`;
-  };
 }
