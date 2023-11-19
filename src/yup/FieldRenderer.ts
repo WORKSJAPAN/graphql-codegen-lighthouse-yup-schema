@@ -31,11 +31,11 @@ export class FieldRenderer {
   ) {}
 
   // object のトップレベルのフィールドのみ (入れ子は別の Schema 定数 or 関数となるため)
-  public render(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
+  public render(field: InputValueDefinitionNode | FieldDefinitionNode): string {
     const generatedCodesForDirectives = this.directiveRenderer.render(field.name.value, field.directives ?? []);
     const gen = this.renderTopLevelField(field.type, generatedCodesForDirectives);
     // TODO: ここで特定のディレクティブの有無によりlazyを入れる
-    return indent(`${field.name.value}: ${gen}`, indentCount);
+    return indent(`${field.name.value}: ${gen}`, 2);
   }
 
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {

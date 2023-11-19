@@ -8,7 +8,7 @@ export class ShapeRenderer {
   public render(fields: readonly (InputValueDefinitionNode | FieldDefinitionNode)[]) {
     return fields
       ?.map(field => {
-        return this.fieldRenderer.render(field, 2);
+        return this.fieldRenderer.render(field);
       })
       .join(',\n');
   }
