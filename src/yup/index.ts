@@ -9,6 +9,7 @@ import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { ScalarRenderer } from './ScalarRenderer';
+import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
@@ -35,10 +36,12 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       this.registry,
       visitorFactory.createVisitor('input'),
       exportTypeStrategy,
-      new FieldRenderer(
-        config,
-        visitorFactory.createVisitor('input'),
-        new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('input'))
+      new ShapeRenderer(
+        new FieldRenderer(
+          config,
+          visitorFactory.createVisitor('input'),
+          new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('input'))
+        )
       )
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
@@ -46,10 +49,12 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       visitorFactory.createVisitor('output'),
       withObjectTypesSpec,
       exportTypeStrategy,
-      new FieldRenderer(
-        config,
-        visitorFactory.createVisitor('output'),
-        new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('output'))
+      new ShapeRenderer(
+        new FieldRenderer(
+          config,
+          visitorFactory.createVisitor('output'),
+          new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('output'))
+        )
       )
     );
     this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(

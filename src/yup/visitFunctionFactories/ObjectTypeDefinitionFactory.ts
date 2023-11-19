@@ -1,10 +1,9 @@
 import { ObjectTypeDefinitionNode } from 'graphql';
 
-import { isNonNullType } from '../../graphql';
 import { Visitor } from '../../visitor';
 import { ExportTypeStrategy } from '../exportTypeStrategies/ExportTypeStrategy';
-import { FieldRenderer } from '../FieldRenderer';
 import { Registry } from '../registry';
+import { ShapeRenderer } from '../ShapeRenderer';
 import { WithObjectTypesSpec } from '../withObjectTypesSpecs/WithObjectTypesSpec';
 import { VisitFunctionFactory } from './types';
 
@@ -14,7 +13,7 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
     private readonly visitor: Visitor,
     private readonly withObjectTypesSpec: WithObjectTypesSpec,
     private readonly exportTypeStrategy: ExportTypeStrategy,
-    private readonly fieldRenderer: FieldRenderer
+    private readonly shapeRenderer: ShapeRenderer
   ) {}
 
   create() {
@@ -27,13 +26,12 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
       // Building schema for field arguments.
       const argumentBlocks = this.visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
         this.registry.registerType(typeName);
-        const shapeContent = this.fieldRenderer.renderFieldsShapeContent(field.arguments ?? []);
-        return this.exportTypeStrategy.buildInputFields(shapeContent, typeName);
+        return this.exportTypeStrategy.buildInputFields(this.shapeRenderer.render(field.arguments ?? []), typeName);
       });
       const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
       // Building schema for fields.
-      const shapeContent = this.fieldRenderer.renderFieldsShapeContent(node.fields ?? []);
+      const shapeContent = this.shapeRenderer.render(node.fields ?? []);
 
       return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shapeContent, appendArguments);
     };

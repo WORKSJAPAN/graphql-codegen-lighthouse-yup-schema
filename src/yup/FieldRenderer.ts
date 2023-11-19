@@ -15,15 +15,7 @@ export class FieldRenderer {
     private readonly scalarRenderer: ScalarRenderer
   ) {}
 
-  public renderFieldsShapeContent(fields: readonly (InputValueDefinitionNode | FieldDefinitionNode)[]) {
-    return fields
-      ?.map(field => {
-        return this.renderField(field, 2);
-      })
-      .join(',\n');
-  }
-
-  private renderField(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
+  public render(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
     const generatedCodesForDirectives = buildApi(
       field.name.value,
       this.config.rules ?? {},
