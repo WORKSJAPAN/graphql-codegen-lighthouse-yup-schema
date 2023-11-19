@@ -1,4 +1,4 @@
-import { indent } from '@graphql-codegen/visitor-plugin-common';
+import { indent, NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 import { FieldDefinitionNode, InputValueDefinitionNode, NameNode, TypeNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
@@ -13,7 +13,7 @@ export class FieldRenderer {
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
     private readonly scalarRenderer: ScalarRenderer,
-    private readonly scalarDirection: 'input' | 'output' | 'both'
+    private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
 
   public render(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {

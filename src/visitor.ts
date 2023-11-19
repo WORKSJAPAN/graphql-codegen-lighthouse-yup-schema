@@ -1,4 +1,5 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
+import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
@@ -28,14 +29,11 @@ export class Visitor extends TsVisitor {
     };
   }
 
-  public getScalarType(scalarName: string, scalarDirection: 'input' | 'output' | 'both'): string | null {
-    if (scalarDirection === 'both') {
-      return null;
-    }
+  public getScalarType(scalarName: string, scalarDirection: keyof NormalizedScalarsMap[string]): string | null {
     return this.scalars[scalarName][scalarDirection];
   }
 
-  public shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: 'input' | 'output' | 'both'): boolean {
+  public shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: keyof NormalizedScalarsMap[string]): boolean {
     if (this.pluginConfig.notAllowEmptyString !== true) {
       return false;
     }
