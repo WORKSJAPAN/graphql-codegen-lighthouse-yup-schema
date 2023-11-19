@@ -3,6 +3,7 @@ import { GraphQLSchema } from 'graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import { Interpreter, NewVisitor } from '../types';
 import { Visitor } from '../visitor';
+import { DirectiveRenderer } from './DirectiveRenderer';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { FieldRenderer } from './FieldRenderer';
 import { ImportBuilder } from './ImportBuilder';
@@ -41,7 +42,8 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
           config,
           visitor,
           exportTypeStrategy,
-          new ScalarRenderer(config.scalarSchemas ?? {}, visitor),
+          new DirectiveRenderer(config.rules, config.ignoreRules),
+          new ScalarRenderer(config.scalarSchemas, visitor),
           'input'
         )
       )
@@ -56,7 +58,8 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
           config,
           visitor,
           exportTypeStrategy,
-          new ScalarRenderer(config.scalarSchemas ?? {}, visitor),
+          new DirectiveRenderer(config.rules, config.ignoreRules),
+          new ScalarRenderer(config.scalarSchemas, visitor),
           'output'
         )
       )

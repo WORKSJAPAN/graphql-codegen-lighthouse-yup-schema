@@ -4,7 +4,7 @@ import { Visitor } from '../visitor';
 
 export class ScalarRenderer {
   constructor(
-    private readonly scalarSchemas: Record<string, string>,
+    private readonly scalarSchemas: Record<string, string> = {},
     private readonly visitor: Visitor
   ) {}
 

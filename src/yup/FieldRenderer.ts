@@ -9,9 +9,9 @@ import {
 } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { isInput, isListType, isNamedType, isNonNullType } from '../graphql';
 import { Visitor } from '../visitor';
+import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { ScalarRenderer } from './ScalarRenderer';
 
@@ -25,18 +25,14 @@ export class FieldRenderer {
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
     private readonly exportTypeStrategy: ExportTypeStrategy,
+    private readonly directiveRenderer: DirectiveRenderer,
     private readonly scalarRenderer: ScalarRenderer,
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
 
   // object のトップレベルのフィールドのみ (入れ子は別の Schema 定数 or 関数となるため)
   public render(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-    const generatedCodesForDirectives = buildApi(
-      field.name.value,
-      this.config.rules ?? {},
-      this.config.ignoreRules ?? [],
-      field.directives ?? []
-    );
+    const generatedCodesForDirectives = this.directiveRenderer.render(field.name.value, field.directives ?? []);
     const gen = this.renderTopLevelField(field.type, generatedCodesForDirectives);
     // TODO: ここで特定のディレクティブの有無によりlazyを入れる
     return indent(`${field.name.value}: ${gen}`, indentCount);
