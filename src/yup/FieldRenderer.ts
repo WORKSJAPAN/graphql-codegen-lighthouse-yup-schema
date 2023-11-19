@@ -37,32 +37,29 @@ export class FieldRenderer {
   }
 
   private entry(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+    return this.helper(typeNode, generatedCodesForDirectives);
+  }
+
+  private helper(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     if (isListType(typeNode)) {
-      return this.handleListType(typeNode, null, generatedCodesForDirectives);
+      return this.handleListType(typeNode, false, generatedCodesForDirectives);
     }
     if (isNonNullType(typeNode)) {
       return this.handleNonNullType(typeNode, generatedCodesForDirectives);
     }
     if (isNamedType(typeNode)) {
-      return this.handleNamedType(typeNode, null, generatedCodesForDirectives);
+      return this.handleNamedType(typeNode, false, generatedCodesForDirectives);
     }
     console.warn('unhandled type:', typeNode);
     return '';
   }
 
-  private helper(
-    typeNode: TypeNode,
-    parentType: TypeNode,
-    generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): string {
+  private withNonNull(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     if (isListType(typeNode)) {
-      return this.handleListType(typeNode, parentType, generatedCodesForDirectives);
-    }
-    if (isNonNullType(typeNode)) {
-      return this.handleNonNullType(typeNode, generatedCodesForDirectives);
+      return this.handleListType(typeNode, true, generatedCodesForDirectives);
     }
     if (isNamedType(typeNode)) {
-      return this.handleNamedType(typeNode, parentType, generatedCodesForDirectives);
+      return this.handleNamedType(typeNode, true, generatedCodesForDirectives);
     }
     console.warn('unhandled type:', typeNode);
     return '';
@@ -70,11 +67,11 @@ export class FieldRenderer {
 
   private handleListType(
     typeNode: ListTypeNode,
-    parentType: TypeNode | null,
+    isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
-    const gen = this.helper(typeNode.type, typeNode, generatedCodesForDirectives);
-    const nullable = !parentType || !isNonNullType(parentType);
+    const gen = this.helper(typeNode.type, generatedCodesForDirectives);
+    const nullable = !isNonNull;
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
     return `yup.array(${this.maybeLazy(typeNode.type, `${gen}.defined()`)})${
       generatedCodesForDirectives.rulesForArray
@@ -85,18 +82,18 @@ export class FieldRenderer {
     typeNode: NonNullTypeNode,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
-    const gen = this.helper(typeNode.type, typeNode, generatedCodesForDirectives);
+    const gen = this.withNonNull(typeNode.type, generatedCodesForDirectives);
     return this.maybeLazy(typeNode.type, gen);
   }
 
   // leaf. ends recursion
   private handleNamedType(
     typeNode: NamedTypeNode,
-    parentType: TypeNode | null,
+    isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
     const gen = this.generateNameNodeYupSchema(typeNode.name) + generatedCodesForDirectives.rules;
-    if (!!parentType && isNonNullType(parentType)) {
+    if (isNonNull) {
       if (this.visitor.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)) {
         return `${gen}.defined().required()`;
       }
