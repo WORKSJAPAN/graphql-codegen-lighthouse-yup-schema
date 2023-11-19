@@ -5,7 +5,6 @@ import {
   ListTypeNode,
   NamedTypeNode,
   NameNode,
-  NonNullTypeNode,
   TypeNode,
 } from 'graphql';
 
@@ -44,10 +43,10 @@ export class FieldRenderer {
 
   private handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     if (isListType(typeNode)) {
-      return this.handleListType(typeNode, false, generatedCodesForDirectives);
+      return this.withList(typeNode.type, false, generatedCodesForDirectives);
     }
     if (isNonNullType(typeNode)) {
-      return this.handleNonNullType(typeNode, generatedCodesForDirectives);
+      return this.withNonNull(typeNode.type, generatedCodesForDirectives);
     }
     if (isNamedType(typeNode)) {
       return this.handleNamedType(typeNode, false, generatedCodesForDirectives);
@@ -62,34 +61,27 @@ export class FieldRenderer {
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
     if (isListType(innerTypeNode)) {
-      return this.handleListType(innerTypeNode, true, generatedCodesForDirectives);
+      return this.maybeLazy(innerTypeNode, this.withList(innerTypeNode.type, true, generatedCodesForDirectives));
     }
     if (isNamedType(innerTypeNode)) {
-      return this.handleNamedType(innerTypeNode, true, generatedCodesForDirectives);
+      return this.maybeLazy(innerTypeNode, this.handleNamedType(innerTypeNode, true, generatedCodesForDirectives));
     }
     console.warn('unhandled type:', innerTypeNode);
     return '';
   }
 
-  private handleListType(
-    typeNode: ListTypeNode,
+  // すべてが入りうる
+  private withList(
+    innerTypeNode: TypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
-    const gen = this.handleAllType(typeNode.type, generatedCodesForDirectives);
+    const gen = this.handleAllType(innerTypeNode, generatedCodesForDirectives);
     const nullable = !isNonNull;
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
-    return `yup.array(${this.maybeLazy(typeNode.type, `${gen}.defined()`)})${
+    return `yup.array(${this.maybeLazy(innerTypeNode, `${gen}.defined()`)})${
       generatedCodesForDirectives.rulesForArray
     }${nullable ? '.nullable()' : '.defined()'}`;
-  }
-
-  private handleNonNullType(
-    typeNode: NonNullTypeNode,
-    generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): string {
-    const gen = this.withNonNull(typeNode.type, generatedCodesForDirectives);
-    return this.maybeLazy(typeNode.type, gen);
   }
 
   // leaf. ends recursion
