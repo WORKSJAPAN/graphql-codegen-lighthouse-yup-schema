@@ -3,18 +3,11 @@ import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common
 import { ValidationSchemaPluginConfig } from '../config';
 
 export class InitialEmitter {
-  private readonly enumDeclarations: string[] = [];
-
   constructor(private readonly withObjectType: ValidationSchemaPluginConfig['withObjectType']) {}
 
-  public registerEnumDeclaration(enumDeclaration: string): void {
-    if (this.enumDeclarations.includes(enumDeclaration)) return;
-    this.enumDeclarations.push(enumDeclaration);
-  }
-
-  emit(): string {
-    if (!this.withObjectType) return '\n' + this.enumDeclarations.join('\n');
-    return '\n' + this.enumDeclarations.join('\n') + '\n' + this.unionFunctionDeclaration();
+  emit(enumDeclarations: readonly string[]): string {
+    if (!this.withObjectType) return '\n' + enumDeclarations.join('\n');
+    return '\n' + enumDeclarations.join('\n') + '\n' + this.unionFunctionDeclaration();
   }
 
   private unionFunctionDeclaration(): string {

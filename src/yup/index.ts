@@ -16,17 +16,19 @@ import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { Interpreter, NewVisitor } from '../types';
 import { Visitor } from '../visitor';
 import { VisitorFactory } from '../VisitorFactory';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import { isInput, isListType, isNamedType, isNonNullType } from './../graphql';
 import { EnumDeclarationStrategy } from './enumDeclarationStrategy/EnumDeclarationStrategy';
 import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
+import { Registry } from './registry';
 import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
 import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
+  private readonly registry: Registry;
   private exportTypeStrategy: ExportTypeStrategy;
   private enumExportStrategy: EnumDeclarationStrategy;
   private visitorFactory: VisitorFactory;
@@ -38,6 +40,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     schema: GraphQLSchema,
     private readonly config: ValidationSchemaPluginConfig
   ) {
+    this.registry = new Registry();
     this.visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.visitorFactory.createVisitor('both'));
@@ -47,11 +50,11 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   }
 
   buildImports(): string[] {
-    return this.importBuilder.build();
+    return this.importBuilder.build(this.registry.getTypes());
   }
 
   initialEmit(): string {
-    return this.initialEmitter.emit();
+    return this.initialEmitter.emit(this.registry.getEnumDeclarations());
   }
 
   get InputObjectTypeDefinition() {
@@ -59,7 +62,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       leave: (node: InputObjectTypeDefinitionNode) => {
         const visitor = this.visitorFactory.createVisitor('input');
         const name = visitor.convertName(node.name.value);
-        this.importBuilder.registerType(name);
+        this.registry.registerType(name);
         return this.buildInputFields(node.fields ?? [], visitor, name);
       },
     };
@@ -72,11 +75,11 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
         const visitor = this.visitorFactory.createVisitor('output');
         const name = visitor.convertName(node.name.value);
-        this.importBuilder.registerType(name);
+        this.registry.registerType(name);
 
         // Building schema for field arguments.
         const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
-          this.importBuilder.registerType(typeName);
+          this.registry.registerType(typeName);
           return this.buildInputFields(field.arguments ?? [], visitor, typeName);
         });
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
@@ -101,8 +104,8 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
         const visitor = this.visitorFactory.createVisitor('both');
         const enumName = visitor.convertName(node.name.value);
         const enumDeclaration = this.enumExportStrategy.enumDeclaration(enumName, node.values ?? []);
-        this.importBuilder.registerType(enumName);
-        this.initialEmitter.registerEnumDeclaration(enumDeclaration);
+        this.registry.registerType(enumName);
+        this.registry.registerEnumDeclaration(enumDeclaration);
       },
     };
   }
@@ -114,7 +117,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
         const visitor = this.visitorFactory.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
-        this.importBuilder.registerType(unionName);
+        this.registry.registerType(unionName);
 
         const unionElements = node.types
           ?.map(t => {
