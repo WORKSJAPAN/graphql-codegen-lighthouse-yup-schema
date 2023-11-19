@@ -32,10 +32,14 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
     this.initialEmitter = new InitialEmitter(withObjectTypesSpec);
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
-      config,
       this.registry,
       visitorFactory.createVisitor('input'),
-      exportTypeStrategy
+      new FieldRenderer(
+        config,
+        exportTypeStrategy,
+        visitorFactory.createVisitor('input'),
+        new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('input'))
+      )
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
       this.registry,
