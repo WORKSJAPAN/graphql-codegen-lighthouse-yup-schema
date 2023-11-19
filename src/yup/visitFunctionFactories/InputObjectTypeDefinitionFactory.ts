@@ -17,15 +17,12 @@ import { Registry } from '../registry';
 import { VisitFunctionFactory } from './types';
 
 export class InputObjectTypeDefinitionFactory implements VisitFunctionFactory<InputObjectTypeDefinitionNode> {
-  private readonly exportTypeStrategy: ExportTypeStrategy;
-
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly registry: Registry,
-    private readonly visitor: Visitor
-  ) {
-    this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
-  }
+    private readonly visitor: Visitor,
+    private readonly exportTypeStrategy: ExportTypeStrategy
+  ) {}
 
   create() {
     return (node: InputObjectTypeDefinitionNode) => {

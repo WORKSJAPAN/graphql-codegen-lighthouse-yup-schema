@@ -3,7 +3,6 @@ import { GraphQLSchema } from 'graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import { Interpreter, NewVisitor } from '../types';
 import { VisitorFactory } from '../VisitorFactory';
-import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
@@ -13,38 +12,35 @@ import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/Input
 import { UnionTypesDefinitionFactory } from './visitFunctionFactories/UnionTypesDefinitionFactory';
 import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
 import { ObjectTypeDefinitionFactory } from './withObjectTypesSpecs/ObjectTypeDefinitionFactory';
-import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
-  private readonly registry: Registry;
-  private exportTypeStrategy: ExportTypeStrategy;
-
+  private readonly registry: Registry = new Registry();
   private importBuilder: ImportBuilder;
   private initialEmitter: InitialEmitter;
-  private withObjectTypesSpec: WithObjectTypesSpec;
   private readonly inputObjectTypeDefinitionFactory: InputObjectTypeDefinitionFactory;
   private readonly objectTypeDefinitionFactory: ObjectTypeDefinitionFactory;
   private readonly enumTypeDefinitionFactory: EnumTypeDefinitionFactory;
   private readonly unionTypesDefinitionFactory: UnionTypesDefinitionFactory;
 
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
-    this.registry = new Registry();
     const visitorFactory = new VisitorFactory(schema, config);
-    this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
+    const exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
+    const withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
+
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
     this.initialEmitter = new InitialEmitter(config.withObjectType);
-    this.withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
       config,
       this.registry,
-      visitorFactory.createVisitor('input')
+      visitorFactory.createVisitor('input'),
+      exportTypeStrategy
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
       config,
       this.registry,
       visitorFactory.createVisitor('output'),
-      this.withObjectTypesSpec,
-      this.exportTypeStrategy
+      withObjectTypesSpec,
+      exportTypeStrategy
     );
     this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(
       config,
@@ -54,8 +50,8 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.unionTypesDefinitionFactory = new UnionTypesDefinitionFactory(
       this.registry,
       visitorFactory.createVisitor('output'),
-      createWithObjectTypesSpec(config.withObjectType),
-      createExportTypeStrategy(config.validationSchemaExportType)
+      withObjectTypesSpec,
+      exportTypeStrategy
     );
   }
 
