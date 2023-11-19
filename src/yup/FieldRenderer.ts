@@ -8,6 +8,7 @@ import { DirectiveRenderer } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
 import { ListType } from './renderable/ListType';
+import { NodeFactory } from './renderable/NodeFactory';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
@@ -22,7 +23,10 @@ export class FieldRenderer {
 
   // object のトップレベルのフィールドのみ (入れ子は別の Schema 定数 or 関数となるため)
   public render(field: InputValueDefinitionNode | FieldDefinitionNode): string {
-    const astField = new Field(this, this.directiveRenderer, field);
+    const nodeFactory = new NodeFactory(this);
+    const node = nodeFactory.create(field.type);
+
+    const astField = new Field(this, this.directiveRenderer, field, node);
 
     return astField.render();
   }

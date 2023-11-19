@@ -6,13 +6,15 @@ import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRend
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { NodeFactory } from './NodeFactory';
+import { Renderable } from './Renderable';
 import { renderLazy } from './utils';
 
 export class Field {
   constructor(
     private readonly fieldRenderer: FieldRenderer,
     private readonly directiveRenderer: DirectiveRenderer,
-    private readonly field: InputValueDefinitionNode | FieldDefinitionNode
+    private readonly field: InputValueDefinitionNode | FieldDefinitionNode,
+    private readonly node: Renderable
   ) {}
 
   public render() {
@@ -26,12 +28,10 @@ export class Field {
   }
 
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    const nodeFactory = new NodeFactory(this.fieldRenderer);
-    const node = nodeFactory.create(typeNode);
     const fieldMetadata = new FieldMetadata(generatedCodesForDirectives);
 
-    const rendered = node.render(fieldMetadata);
-    const isLazy = node.shouldBeLazy(fieldMetadata);
+    const rendered = this.node.render(fieldMetadata);
+    const isLazy = this.node.shouldBeLazy(fieldMetadata);
     const maybeLazy = isLazy ? renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
   }
