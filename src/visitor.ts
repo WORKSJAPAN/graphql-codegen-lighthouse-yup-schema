@@ -1,7 +1,8 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode, specifiedScalarTypes } from 'graphql';
+import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
+import { isSpecifiedScalarName } from './graphql';
 
 export class Visitor extends TsVisitor {
   constructor(
@@ -10,10 +11,6 @@ export class Visitor extends TsVisitor {
     private pluginConfig: ValidationSchemaPluginConfig
   ) {
     super(schema, pluginConfig);
-  }
-
-  private isSpecifiedScalarName(scalarName: string) {
-    return specifiedScalarTypes.some(({ name }) => name === scalarName);
   }
 
   public getType(name: string) {
@@ -44,7 +41,7 @@ export class Visitor extends TsVisitor {
       return false;
     }
     const typ = this.getType(name);
-    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !this.isSpecifiedScalarName(name)) {
+    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
       return false;
     }
     const tsType = this.getScalarType(name);
