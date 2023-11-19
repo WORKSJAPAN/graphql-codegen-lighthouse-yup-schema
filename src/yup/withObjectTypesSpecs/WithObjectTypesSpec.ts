@@ -1,5 +1,6 @@
 import { ObjectTypeDefinitionNode } from 'graphql';
 
 export interface WithObjectTypesSpec {
-  shouldBeUsed(node: ObjectTypeDefinitionNode): boolean;
+  shouldUseObjectTypeDefinitionNode(node: ObjectTypeDefinitionNode): boolean;
+  shouldIncludeUnion(): boolean;
 }

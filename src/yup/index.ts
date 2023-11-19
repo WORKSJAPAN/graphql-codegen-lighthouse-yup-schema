@@ -6,7 +6,6 @@ import {
   NameNode,
   ObjectTypeDefinitionNode,
   TypeNode,
-  UnionTypeDefinitionNode,
 } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
@@ -22,6 +21,7 @@ import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
+import { UnionTypesDefinitionFactory } from './visitFunctionFactories/UnionTypesDefinitionFactory';
 import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
 import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
@@ -34,6 +34,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private withObjectTypesSpec: WithObjectTypesSpec;
   private readonly inputObjectTypeDefinitionFactory: InputObjectTypeDefinitionFactory;
   private readonly enumTypeDefinitionFactory: EnumTypeDefinitionFactory;
+  private readonly unionTypesDefinitionFactory: UnionTypesDefinitionFactory;
 
   constructor(
     schema: GraphQLSchema,
@@ -51,6 +52,12 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       this.visitorFactory
     );
     this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(config, this.registry, this.visitorFactory);
+    this.unionTypesDefinitionFactory = new UnionTypesDefinitionFactory(
+      this.registry,
+      this.visitorFactory.createVisitor('output'),
+      createWithObjectTypesSpec(config.withObjectType),
+      createExportTypeStrategy(config.validationSchemaExportType)
+    );
   }
 
   buildImports(): string[] {
@@ -70,7 +77,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   get ObjectTypeDefinition() {
     return {
       leave: (node: ObjectTypeDefinitionNode) => {
-        if (!this.withObjectTypesSpec.shouldBeUsed(node)) return;
+        if (!this.withObjectTypesSpec.shouldUseObjectTypeDefinitionNode(node)) return;
 
         const visitor = this.visitorFactory.createVisitor('output');
         const name = visitor.convertName(node.name.value);
@@ -105,24 +112,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
   get UnionTypeDefinition() {
     return {
-      leave: (node: UnionTypeDefinitionNode) => {
-        if (!node.types || !this.config.withObjectType) return;
-        const visitor = this.visitorFactory.createVisitor('output');
-
-        const unionName = visitor.convertName(node.name.value);
-        this.registry.registerType(unionName);
-
-        const unionElements = node.types
-          ?.map(t => {
-            const element = visitor.convertName(t.name.value);
-            const typ = visitor.getType(t.name.value);
-
-            return this.exportTypeStrategy.schemaEvaluation(`${element}Schema`, typ?.astNode?.kind);
-          })
-          .join(', ');
-
-        return this.exportTypeStrategy.unionTypeDefinition(unionName, unionElements);
-      },
+      leave: this.unionTypesDefinitionFactory.create(),
     };
   }
 
