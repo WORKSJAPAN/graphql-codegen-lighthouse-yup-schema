@@ -11,6 +11,7 @@ import {
 import { ValidationSchemaPluginConfig } from '../config';
 import { isInput, isListType, isNamedType, isNonNullType, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
+import { Field } from './ast/Field';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { ScalarRenderer } from './ScalarRenderer';
@@ -32,13 +33,13 @@ export class FieldRenderer {
 
   // object のトップレベルのフィールドのみ (入れ子は別の Schema 定数 or 関数となるため)
   public render(field: InputValueDefinitionNode | FieldDefinitionNode): string {
-    const generatedCodesForDirectives = this.directiveRenderer.render(field.name.value, field.directives ?? []);
-    const gen = this.renderTopLevelField(field.type, generatedCodesForDirectives);
-    // TODO: ここで特定のディレクティブの有無によりlazyを入れる
-    return indent(`${field.name.value}: ${gen}`, 2);
+    const astField = new Field(this, this.directiveRenderer, field);
+
+    return astField.render();
   }
 
-  private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+  // temporarily public
+  public renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     const { isLazy, rendered } = this.handleAllType(typeNode, generatedCodesForDirectives);
     const maybeLazy = isLazy ? this.renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
