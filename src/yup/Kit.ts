@@ -4,7 +4,9 @@ import { GraphQLSchema } from 'graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import { Visitor } from '../visitor';
 import { DirectiveRenderer } from './DirectiveRenderer';
-import { createExportTypeStrategy } from './exportTypeStrategies/factory';
+import { ConstExportTypeStrategy } from './exportTypeStrategies/ConstExportTypeStrategy';
+import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
+import { FunctionExportTypeStrategy } from './exportTypeStrategies/FunctionExportTypeStrategy';
 import { FieldRenderer } from './FieldRenderer';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
@@ -15,7 +17,10 @@ import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefi
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
 import { UnionTypesDefinitionFactory } from './visitFunctionFactories/UnionTypesDefinitionFactory';
-import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
+import { AllWithObjectTypesSpec } from './withObjectTypesSpecs/AllWithObjectTypesSpec';
+import { NoReservedWithObjectTypesSpec } from './withObjectTypesSpecs/NoReservedWithObjectTypesSpec';
+import { NullWithObjectTypesSpec } from './withObjectTypesSpecs/NullWithObjectTypesSpec';
+import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class Kit {
   constructor(
@@ -27,12 +32,30 @@ export class Kit {
     return new Visitor(this.schema, this.config);
   }
 
-  getWithObjectTypesSpec() {
-    return createWithObjectTypesSpec(this.config.withObjectType);
+  getWithObjectTypesSpec(): WithObjectTypesSpec {
+    const type = this.config.withObjectType ?? false;
+    switch (type) {
+      case 'no-reserved':
+        return new NoReservedWithObjectTypesSpec();
+      case 'all':
+        return new AllWithObjectTypesSpec();
+      case false:
+        return new NullWithObjectTypesSpec();
+      default:
+        return assertNever(type);
+    }
   }
 
-  getExportTypesStrategy() {
-    return createExportTypeStrategy(this.config.validationSchemaExportType);
+  getExportTypesStrategy(): ExportTypeStrategy {
+    const type = this.config.validationSchemaExportType ?? 'function';
+    switch (type) {
+      case 'function':
+        return new FunctionExportTypeStrategy();
+      case 'const':
+        return new ConstExportTypeStrategy();
+      default:
+        return assertNever(type);
+    }
   }
 
   getFieldRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
@@ -98,4 +121,8 @@ export class Kit {
       this.getExportTypesStrategy()
     );
   }
+}
+
+function assertNever(type: never): never {
+  throw new Error(`undefined type ${type}`);
 }
