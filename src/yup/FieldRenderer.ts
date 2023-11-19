@@ -94,11 +94,11 @@ export class FieldRenderer {
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
     const arrayContent = `${rendered}.defined()`;
     const maybeLazy = isLazy ? this.renderLazy(arrayContent) : arrayContent;
-    const nullable = !isNonNull;
+
     return {
       isLazy: false,
       rendered: `yup.array(${maybeLazy})${generatedCodesForDirectives.rulesForArray}${
-        nullable ? '.nullable()' : '.defined()'
+        isNonNull ? '.defined()' : '.nullable()'
       }`,
     };
   }
@@ -112,15 +112,13 @@ export class FieldRenderer {
     const isLazy = this.isLazy(typeNode);
     const gen = this.generateNameNodeYupSchema(typeNode.name) + generatedCodesForDirectives.rules;
     if (isNonNull) {
-      if (this.visitor.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)) {
-        return {
-          isLazy,
-          rendered: `${gen}.defined().required()`,
-        };
-      }
+      const rendered = this.visitor.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)
+        ? `${gen}.defined().required()`
+        : `${gen}.defined().nonNullable()`;
+
       return {
         isLazy,
-        rendered: `${gen}.defined().nonNullable()`,
+        rendered,
       };
     }
     const typ = this.visitor.getType(typeNode.name.value);
