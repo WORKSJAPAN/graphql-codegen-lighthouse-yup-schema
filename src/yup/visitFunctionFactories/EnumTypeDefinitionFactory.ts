@@ -1,7 +1,7 @@
 import { EnumTypeDefinitionNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../../config';
-import { VisitorFactory } from '../../VisitorFactory';
+import { Visitor } from '../../visitor';
 import { EnumDeclarationStrategy } from '../enumDeclarationStrategy/EnumDeclarationStrategy';
 import { createEnumDeclarationStrategy } from '../enumDeclarationStrategy/factory';
 import { Registry } from '../registry';
@@ -13,18 +13,14 @@ export class EnumTypeDefinitionFactory implements VisitFunctionFactory<EnumTypeD
   constructor(
     config: ValidationSchemaPluginConfig,
     private readonly registry: Registry,
-    private readonly visitorFactory: VisitorFactory
+    private readonly visitor: Visitor
   ) {
-    this.enumDeclarationStrategy = createEnumDeclarationStrategy(
-      config.enumsAsTypes,
-      this.visitorFactory.createVisitor('both')
-    );
+    this.enumDeclarationStrategy = createEnumDeclarationStrategy(config.enumsAsTypes, this.visitor);
   }
 
   create() {
     return (node: EnumTypeDefinitionNode) => {
-      const visitor = this.visitorFactory.createVisitor('both');
-      const enumName = visitor.convertName(node.name.value);
+      const enumName = this.visitor.convertName(node.name.value);
       const enumDeclaration = this.enumDeclarationStrategy.enumDeclaration(enumName, node.values ?? []);
       this.registry.registerType(enumName);
       this.registry.registerEnumDeclaration(enumDeclaration);

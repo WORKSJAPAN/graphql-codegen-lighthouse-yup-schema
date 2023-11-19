@@ -11,7 +11,6 @@ import { ValidationSchemaPluginConfig } from '../../config';
 import { buildApi, GeneratedCodesForDirectives } from '../../directive';
 import { isInput, isListType, isNamedType, isNonNullType } from '../../graphql';
 import { Visitor } from '../../visitor';
-import { VisitorFactory } from '../../VisitorFactory';
 import { ExportTypeStrategy } from '../exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from '../exportTypeStrategies/factory';
 import { Registry } from '../registry';
@@ -23,17 +22,16 @@ export class InputObjectTypeDefinitionFactory implements VisitFunctionFactory<In
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly registry: Registry,
-    private readonly visitorFactory: VisitorFactory
+    private readonly visitor: Visitor
   ) {
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
   }
 
   create() {
     return (node: InputObjectTypeDefinitionNode) => {
-      const visitor = this.visitorFactory.createVisitor('input');
-      const name = visitor.convertName(node.name.value);
+      const name = this.visitor.convertName(node.name.value);
       this.registry.registerType(name);
-      return this.buildInputFields(node.fields ?? [], visitor, name);
+      return this.buildInputFields(node.fields ?? [], this.visitor, name);
     };
   }
 

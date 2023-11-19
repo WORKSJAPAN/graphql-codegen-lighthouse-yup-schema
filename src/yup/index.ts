@@ -18,7 +18,7 @@ import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec'
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private readonly registry: Registry;
   private exportTypeStrategy: ExportTypeStrategy;
-  private visitorFactory: VisitorFactory;
+
   private importBuilder: ImportBuilder;
   private initialEmitter: InitialEmitter;
   private withObjectTypesSpec: WithObjectTypesSpec;
@@ -29,7 +29,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     this.registry = new Registry();
-    this.visitorFactory = new VisitorFactory(schema, config);
+    const visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
     this.initialEmitter = new InitialEmitter(config.withObjectType);
@@ -37,19 +37,23 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
       config,
       this.registry,
-      this.visitorFactory
+      visitorFactory.createVisitor('input')
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
       config,
       this.registry,
-      this.visitorFactory.createVisitor('output'),
+      visitorFactory.createVisitor('output'),
       this.withObjectTypesSpec,
       this.exportTypeStrategy
     );
-    this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(config, this.registry, this.visitorFactory);
+    this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(
+      config,
+      this.registry,
+      visitorFactory.createVisitor('both')
+    );
     this.unionTypesDefinitionFactory = new UnionTypesDefinitionFactory(
       this.registry,
-      this.visitorFactory.createVisitor('output'),
+      visitorFactory.createVisitor('output'),
       createWithObjectTypesSpec(config.withObjectType),
       createExportTypeStrategy(config.validationSchemaExportType)
     );
