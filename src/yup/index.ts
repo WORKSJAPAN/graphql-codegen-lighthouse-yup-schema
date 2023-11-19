@@ -4,9 +4,11 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { Interpreter, NewVisitor } from '../types';
 import { VisitorFactory } from '../VisitorFactory';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
+import { FieldRenderer } from './FieldRenderer';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
+import { ScalarRenderer } from './ScalarRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
@@ -36,11 +38,16 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       exportTypeStrategy
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
-      config,
       this.registry,
       visitorFactory.createVisitor('output'),
       withObjectTypesSpec,
-      exportTypeStrategy
+      exportTypeStrategy,
+      new FieldRenderer(
+        config,
+        exportTypeStrategy,
+        visitorFactory.createVisitor('output'),
+        new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('output'))
+      )
     );
     this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(
       config.enumsAsTypes,
