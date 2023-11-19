@@ -20,8 +20,7 @@ export class FieldRenderer {
   public renderInputField(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[], name: string) {
     const shape = fields
       ?.map(field => {
-        const fieldSchema = this.renderField(field, 2);
-        return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+        return this.renderField(field, 2);
       })
       .join(',\n');
 
@@ -36,7 +35,8 @@ export class FieldRenderer {
       field.directives ?? []
     );
     const gen = this.generateFieldTypeYupSchema(field.type, null, generatedCodesForDirectives);
-    return indent(`${field.name.value}: ${this.maybeLazy(field.type, gen)}`, indentCount);
+    const ret = indent(`${field.name.value}: ${this.maybeLazy(field.type, gen)}`, indentCount);
+    return isNonNullType(field.type) ? ret : `${ret}.optional()`;
   }
 
   private generateFieldTypeYupSchema(

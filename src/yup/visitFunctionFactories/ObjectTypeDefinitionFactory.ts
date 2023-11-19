@@ -35,8 +35,7 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
       const shape =
         node.fields
           ?.map(field => {
-            const fieldSchema = this.fieldRenderer.renderField(field, 2);
-            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+            return this.fieldRenderer.renderField(field, 2);
           })
           .join(',\n') ?? '';
 
