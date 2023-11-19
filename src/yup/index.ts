@@ -34,9 +34,9 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
       this.registry,
       visitorFactory.createVisitor('input'),
+      exportTypeStrategy,
       new FieldRenderer(
         config,
-        exportTypeStrategy,
         visitorFactory.createVisitor('input'),
         new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('input'))
       )
@@ -48,7 +48,6 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       exportTypeStrategy,
       new FieldRenderer(
         config,
-        exportTypeStrategy,
         visitorFactory.createVisitor('output'),
         new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('output'))
       )

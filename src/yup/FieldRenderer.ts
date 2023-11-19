@@ -5,23 +5,15 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { isInput, isListType, isNamedType, isNonNullType } from '../graphql';
 import { Visitor } from '../visitor';
-import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
-    private readonly exportTypeStrategy: ExportTypeStrategy,
     private readonly visitor: Visitor,
     private readonly scalarRenderer: ScalarRenderer
   ) {}
-
-  public renderInputFieldsShape(fields: readonly InputValueDefinitionNode[], name: string) {
-    const shape = this.renderFieldsShapeContent(fields);
-
-    return this.exportTypeStrategy.buildInputFields(shape, name);
-  }
 
   public renderFieldsShapeContent(fields: readonly (InputValueDefinitionNode | FieldDefinitionNode)[]) {
     return fields
