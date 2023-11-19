@@ -31,14 +31,28 @@ export class FieldRenderer {
       this.config.ignoreRules ?? [],
       field.directives ?? []
     );
-    const gen = this.helper(field.type, null, generatedCodesForDirectives);
+    const gen = this.entry(field.type, generatedCodesForDirectives);
     const ret = indent(`${field.name.value}: ${this.maybeLazy(field.type, gen)}`, indentCount);
     return isNonNullType(field.type) ? ret : `${ret}.optional()`;
   }
 
+  private entry(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+    if (isListType(typeNode)) {
+      return this.handleListType(typeNode, null, generatedCodesForDirectives);
+    }
+    if (isNonNullType(typeNode)) {
+      return this.handleNonNullType(typeNode, generatedCodesForDirectives);
+    }
+    if (isNamedType(typeNode)) {
+      return this.handleNamedType(typeNode, null, generatedCodesForDirectives);
+    }
+    console.warn('unhandled type:', typeNode);
+    return '';
+  }
+
   private helper(
     typeNode: TypeNode,
-    parentType: TypeNode | null,
+    parentType: TypeNode,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
     if (isListType(typeNode)) {
@@ -75,6 +89,7 @@ export class FieldRenderer {
     return this.maybeLazy(typeNode.type, gen);
   }
 
+  // leaf. ends recursion
   private handleNamedType(
     typeNode: NamedTypeNode,
     parentType: TypeNode | null,
