@@ -7,6 +7,7 @@ import { Visitor } from '../visitor';
 import { DirectiveRenderer } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
+import { ListType } from './renderable/ListType';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {

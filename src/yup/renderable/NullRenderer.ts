@@ -7,9 +7,10 @@ export class NullRenderable implements Renderable {
 
   render() {
     console.warn('unhandled type:', this.typeNode);
-    return {
-      isLazy: false,
-      rendered: '',
-    };
+    return '';
+  }
+
+  shouldBeLazy() {
+    return false;
   }
 }

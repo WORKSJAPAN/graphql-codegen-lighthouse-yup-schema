@@ -5,10 +5,10 @@ import { renderLazy } from './utils';
 
 export class ListType implements Renderable {
   constructor(
-    readonly fieldRenderer: FieldRenderer,
-    readonly fieldMetadata: FieldMetadata,
-    readonly child: Renderable,
-    readonly isNonNull: boolean
+    private readonly fieldRenderer: FieldRenderer,
+    private readonly fieldMetadata: FieldMetadata,
+    private readonly child: Renderable,
+    private readonly isNonNull: boolean
   ) {}
 
   public render() {
