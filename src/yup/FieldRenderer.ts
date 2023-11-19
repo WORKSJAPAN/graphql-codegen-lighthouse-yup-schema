@@ -1,14 +1,10 @@
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { FieldDefinitionNode, InputValueDefinitionNode, NamedTypeNode, NameNode } from 'graphql';
+import { NamedTypeNode, NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { isInput, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
-import { DirectiveRenderer } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
-import { Field } from './renderable/Field';
-import { ListType } from './renderable/ListType';
-import { NodeFactory } from './renderable/NodeFactory';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
@@ -16,20 +12,9 @@ export class FieldRenderer {
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
     private readonly exportTypeStrategy: ExportTypeStrategy,
-    private readonly directiveRenderer: DirectiveRenderer,
     private readonly scalarRenderer: ScalarRenderer,
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
-
-  // object のトップレベルのフィールドのみ (入れ子は別の Schema 定数 or 関数となるため)
-  public render(field: InputValueDefinitionNode | FieldDefinitionNode): string {
-    const nodeFactory = new NodeFactory(this);
-    const node = nodeFactory.create(field.type);
-
-    const astField = new Field(this, this.directiveRenderer, field, node);
-
-    return astField.render();
-  }
 
   public generateNameNodeYupSchema(node: NameNode): string {
     const converter = this.getNameNodeConverter(node);

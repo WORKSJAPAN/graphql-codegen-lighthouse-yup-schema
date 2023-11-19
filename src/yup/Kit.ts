@@ -11,6 +11,7 @@ import { FieldRenderer } from './FieldRenderer';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
+import { NodeFactory } from './renderable/NodeFactory';
 import { ScalarRenderer } from './ScalarRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
@@ -63,7 +64,6 @@ export class Kit {
       this.config,
       this.getVisitor(),
       this.getExportTypesStrategy(),
-      this.getDirectiveRenderer(),
       this.getScalarRenderer(),
       scalarDirection
     );
@@ -78,7 +78,15 @@ export class Kit {
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(this.getFieldRenderer(scalarDirection));
+    return new ShapeRenderer(
+      this.getFieldRenderer(scalarDirection),
+      this.getDirectiveRenderer(),
+      this.getNodeFactory(scalarDirection)
+    );
+  }
+
+  getNodeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new NodeFactory(this.getFieldRenderer(scalarDirection));
   }
 
   getImportBuilder() {
