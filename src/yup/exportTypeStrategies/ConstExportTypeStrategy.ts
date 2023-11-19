@@ -26,7 +26,7 @@ export class ConstExportTypeStrategy implements ExportTypeStrategy {
       .withContent(`union<${unionName}>(${unionElements})`).string;
   }
 
-  inputObjectTypeDefinition(shape: string, name: string): string {
+  inputObjectTypeDefinition(name: string, shape: string): string {
     return new DeclarationBlock({})
       .export()
       .asKind('const')
