@@ -4,7 +4,7 @@ import { AsConstEnumDeclarationStrategy } from './AsConstEnumDeclarationStrategy
 import { AsTypeEnumDeclarationStrategy } from './AsTypeEnumDeclarationStrategy';
 import { EnumDeclarationStrategy } from './EnumDeclarationStrategy';
 
-export const createEnumExportStrategy = (
+export const createEnumDeclarationStrategy = (
   enumsAsType: boolean | undefined,
   visitor: TsVisitor
 ): EnumDeclarationStrategy => {

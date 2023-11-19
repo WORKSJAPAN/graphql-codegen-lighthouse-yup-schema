@@ -1,6 +1,5 @@
 import { indent } from '@graphql-codegen/visitor-plugin-common';
 import {
-  EnumTypeDefinitionNode,
   FieldDefinitionNode,
   GraphQLSchema,
   InputValueDefinitionNode,
@@ -16,13 +15,12 @@ import { Interpreter, NewVisitor } from '../types';
 import { Visitor } from '../visitor';
 import { VisitorFactory } from '../VisitorFactory';
 import { isInput, isListType, isNamedType, isNonNullType } from './../graphql';
-import { EnumDeclarationStrategy } from './enumDeclarationStrategy/EnumDeclarationStrategy';
-import { createEnumExportStrategy } from './enumDeclarationStrategy/factory';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
+import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
 import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
@@ -30,12 +28,12 @@ import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec'
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private readonly registry: Registry;
   private exportTypeStrategy: ExportTypeStrategy;
-  private enumExportStrategy: EnumDeclarationStrategy;
   private visitorFactory: VisitorFactory;
   private importBuilder: ImportBuilder;
   private initialEmitter: InitialEmitter;
   private withObjectTypesSpec: WithObjectTypesSpec;
   private readonly inputObjectTypeDefinitionFactory: InputObjectTypeDefinitionFactory;
+  private readonly enumTypeDefinitionFactory: EnumTypeDefinitionFactory;
 
   constructor(
     schema: GraphQLSchema,
@@ -44,15 +42,15 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.registry = new Registry();
     this.visitorFactory = new VisitorFactory(schema, config);
     this.exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
-    this.enumExportStrategy = createEnumExportStrategy(config.enumsAsTypes, this.visitorFactory.createVisitor('both'));
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
     this.initialEmitter = new InitialEmitter(config.withObjectType);
     this.withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
+      config,
       this.registry,
-      this.visitorFactory,
-      config
+      this.visitorFactory
     );
+    this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(config, this.registry, this.visitorFactory);
   }
 
   buildImports(): string[] {
@@ -101,13 +99,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
   get EnumTypeDefinition() {
     return {
-      leave: (node: EnumTypeDefinitionNode) => {
-        const visitor = this.visitorFactory.createVisitor('both');
-        const enumName = visitor.convertName(node.name.value);
-        const enumDeclaration = this.enumExportStrategy.enumDeclaration(enumName, node.values ?? []);
-        this.registry.registerType(enumName);
-        this.registry.registerEnumDeclaration(enumDeclaration);
-      },
+      leave: this.enumTypeDefinitionFactory.create(),
     };
   }
 
