@@ -29,7 +29,7 @@ export class FunctionExportTypeStrategy implements ExportTypeStrategy {
       .withBlock(indent(`return union<${unionName}>(${unionElements})`)).string;
   }
 
-  buildInputFields(shape: string, name: string): string {
+  inputObjectTypeDefinition(shape: string, name: string): string {
     return new DeclarationBlock({})
       .export()
       .asKind('function')

@@ -26,7 +26,10 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
       // Building schema for field arguments.
       const argumentBlocks = this.visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
         this.registry.registerType(typeName);
-        return this.exportTypeStrategy.buildInputFields(this.shapeRenderer.render(field.arguments ?? []), typeName);
+        return this.exportTypeStrategy.inputObjectTypeDefinition(
+          this.shapeRenderer.render(field.arguments ?? []),
+          typeName
+        );
       });
       const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
