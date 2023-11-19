@@ -3,7 +3,6 @@ import {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
   GraphQLSchema,
-  InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
   NameNode,
   ObjectTypeDefinitionNode,
@@ -24,6 +23,7 @@ import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
+import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
 import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
@@ -35,6 +35,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private importBuilder: ImportBuilder;
   private initialEmitter: InitialEmitter;
   private withObjectTypesSpec: WithObjectTypesSpec;
+  private readonly inputObjectTypeDefinitionFactory: InputObjectTypeDefinitionFactory;
 
   constructor(
     schema: GraphQLSchema,
@@ -47,6 +48,11 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
     this.initialEmitter = new InitialEmitter(config.withObjectType);
     this.withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
+    this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
+      this.registry,
+      this.visitorFactory,
+      config
+    );
   }
 
   buildImports(): string[] {
@@ -59,12 +65,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
 
   get InputObjectTypeDefinition() {
     return {
-      leave: (node: InputObjectTypeDefinitionNode) => {
-        const visitor = this.visitorFactory.createVisitor('input');
-        const name = visitor.convertName(node.name.value);
-        this.registry.registerType(name);
-        return this.buildInputFields(node.fields ?? [], visitor, name);
-      },
+      leave: this.inputObjectTypeDefinitionFactory.create(),
     };
   }
 
