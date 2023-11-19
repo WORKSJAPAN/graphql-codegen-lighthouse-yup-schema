@@ -32,46 +32,47 @@ export class FieldRenderer {
       field.directives ?? []
     );
     const gen = this.handleTopLevelField(field.type, generatedCodesForDirectives);
+    // TODO: ここで特定のディレクティブの有無によりlazyを入れる
     return indent(`${field.name.value}: ${gen}`, indentCount);
   }
 
   private handleTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    // TODO: ここで特定のディレクティブの有無によりlazyを入れる
     const ret = this.maybeLazy(typeNode, this.handleAllType(typeNode, generatedCodesForDirectives));
     return isNonNullType(typeNode) ? ret : `${ret}.optional()`;
   }
 
   private handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     if (isListType(typeNode)) {
-      return this.withList(typeNode.type, false, generatedCodesForDirectives);
+      return this.renderList(typeNode.type, false, generatedCodesForDirectives);
     }
     if (isNonNullType(typeNode)) {
       return this.withNonNull(typeNode.type, generatedCodesForDirectives);
     }
     if (isNamedType(typeNode)) {
-      return this.handleNamedType(typeNode, false, generatedCodesForDirectives);
+      return this.renderNamedType(typeNode, false, generatedCodesForDirectives);
     }
     console.warn('unhandled type:', typeNode);
     return '';
   }
 
   // NonNull がネストすることはない
+  // NonNull をどうレンダリングするかは子の型によって変わる
   private withNonNull(
     innerTypeNode: ListTypeNode | NamedTypeNode,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
     if (isListType(innerTypeNode)) {
-      return this.withList(innerTypeNode.type, true, generatedCodesForDirectives);
+      return this.renderList(innerTypeNode.type, true, generatedCodesForDirectives);
     }
     if (isNamedType(innerTypeNode)) {
-      return this.maybeLazy(innerTypeNode, this.handleNamedType(innerTypeNode, true, generatedCodesForDirectives));
+      return this.maybeLazy(innerTypeNode, this.renderNamedType(innerTypeNode, true, generatedCodesForDirectives));
     }
     console.warn('unhandled type:', innerTypeNode);
     return '';
   }
 
   // すべてが入りうる
-  private withList(
+  private renderList(
     innerTypeNode: TypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
@@ -85,7 +86,7 @@ export class FieldRenderer {
   }
 
   // leaf. ends recursion
-  private handleNamedType(
+  private renderNamedType(
     typeNode: NamedTypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
@@ -122,10 +123,18 @@ export class FieldRenderer {
   }
 
   private maybeLazy(type: TypeNode, schema: string): string {
-    if (isNamedType(type) && isInput(type.name.value) && this.config.lazyTypes?.includes(type.name.value)) {
+    if (this.isLazy(type)) {
       // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
       return `yup.lazy(() => ${schema})`;
     }
     return schema;
+  }
+
+  private isLazy(type: TypeNode): boolean {
+    return isNamedType(type) && isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
+  }
+
+  private renderLazy(schema: string): string {
+    return `yup.lazy(() => ${schema})`;
   }
 }
