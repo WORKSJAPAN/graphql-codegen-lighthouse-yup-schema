@@ -6,7 +6,6 @@ import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRend
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { NodeFactory } from './NodeFactory';
-import { Renderable } from './Renderable';
 
 export class Field {
   constructor(
@@ -25,17 +24,13 @@ export class Field {
     return indent(`${this.field.name.value}: ${gen}`, 2);
   }
 
-  // temporarily public
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    const node = this.createNode(typeNode, generatedCodesForDirectives);
+    const nodeFactory = new NodeFactory(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives));
+    const node = nodeFactory.create(typeNode);
+
     const rendered = node.render();
     const isLazy = node.shouldBeLazy();
     const maybeLazy = isLazy ? this.fieldRenderer.renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
-  }
-
-  private createNode(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): Renderable {
-    const nodeFactory = new NodeFactory(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives));
-    return nodeFactory.create(typeNode);
   }
 }
