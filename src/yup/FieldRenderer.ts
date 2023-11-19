@@ -61,7 +61,7 @@ export class FieldRenderer {
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
     if (isListType(innerTypeNode)) {
-      return this.maybeLazy(innerTypeNode, this.withList(innerTypeNode.type, true, generatedCodesForDirectives));
+      return this.withList(innerTypeNode.type, true, generatedCodesForDirectives);
     }
     if (isNamedType(innerTypeNode)) {
       return this.maybeLazy(innerTypeNode, this.handleNamedType(innerTypeNode, true, generatedCodesForDirectives));
