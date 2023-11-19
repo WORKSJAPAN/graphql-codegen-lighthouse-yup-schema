@@ -24,6 +24,7 @@ export class FieldRenderer {
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
 
+  // object のトップレベルのフィールドのみ (入れ子は別の Schema 定数 or 関数となるため)
   public render(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
     const generatedCodesForDirectives = buildApi(
       field.name.value,
@@ -31,13 +32,13 @@ export class FieldRenderer {
       this.config.ignoreRules ?? [],
       field.directives ?? []
     );
-    const gen = this.entry(field.type, generatedCodesForDirectives);
-    const ret = indent(`${field.name.value}: ${this.maybeLazy(field.type, gen)}`, indentCount);
-    return isNonNullType(field.type) ? ret : `${ret}.optional()`;
+    const gen = this.handleTopLevelField(field.type, generatedCodesForDirectives);
+    return indent(`${field.name.value}: ${gen}`, indentCount);
   }
 
-  private entry(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    return this.helper(typeNode, generatedCodesForDirectives);
+  private handleTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+    const ret = this.maybeLazy(typeNode, this.helper(typeNode, generatedCodesForDirectives));
+    return isNonNullType(typeNode) ? ret : `${ret}.optional()`;
   }
 
   private helper(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
