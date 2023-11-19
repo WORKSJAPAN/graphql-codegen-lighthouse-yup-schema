@@ -1,26 +1,30 @@
 import { NonNullTypeNode } from 'graphql';
 
 import { isListType, isNamedType } from '../../graphql';
-import { GeneratedCodesForDirectives } from '../DirectiveRenderer';
 import { FieldRenderer } from '../FieldRenderer';
+import { FieldMetadata } from './FieldMetadata';
 import { ListType } from './ListType';
 import { Renderable } from './Renderable';
 
 export class NonNullType implements Renderable {
   constructor(
     readonly fieldRenderer: FieldRenderer,
-    readonly generatedCodesForDirectives: GeneratedCodesForDirectives,
+    readonly fieldMetadata: FieldMetadata,
     readonly nonNullTypeNode: NonNullTypeNode
   ) {}
 
   public render() {
     const innerNodeType = this.nonNullTypeNode.type;
     if (isListType(innerNodeType)) {
-      const renderable = new ListType(this.fieldRenderer, this.generatedCodesForDirectives, innerNodeType, true);
+      const renderable = new ListType(this.fieldRenderer, this.fieldMetadata, innerNodeType, true);
       return renderable.render();
     }
     if (isNamedType(innerNodeType)) {
-      return this.fieldRenderer.renderNamedType(innerNodeType, true, this.generatedCodesForDirectives);
+      return this.fieldRenderer.renderNamedType(
+        innerNodeType,
+        true,
+        this.fieldMetadata.getGeneratedCodesForDirectives()
+      );
     }
     console.warn('unhandled type:', innerNodeType);
     return {

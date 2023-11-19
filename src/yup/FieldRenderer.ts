@@ -7,6 +7,7 @@ import { Visitor } from '../visitor';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
+import { FieldMetadata } from './renderable/FieldMetadata';
 import { ListType } from './renderable/ListType';
 import { NonNullType } from './renderable/NonNullType';
 import { ScalarRenderer } from './ScalarRenderer';
@@ -36,11 +37,11 @@ export class FieldRenderer {
   // temporarily public
   public handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): RenderResult {
     if (isListType(typeNode)) {
-      const renderable = new ListType(this, generatedCodesForDirectives, typeNode, false);
+      const renderable = new ListType(this, new FieldMetadata(generatedCodesForDirectives), typeNode, false);
       return renderable.render();
     }
     if (isNonNullType(typeNode)) {
-      const renderable = new NonNullType(this, generatedCodesForDirectives, typeNode);
+      const renderable = new NonNullType(this, new FieldMetadata(generatedCodesForDirectives), typeNode);
       return renderable.render();
     }
     if (isNamedType(typeNode)) {

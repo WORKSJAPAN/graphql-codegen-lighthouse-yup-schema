@@ -4,7 +4,6 @@ import { FieldDefinitionNode, InputValueDefinitionNode, TypeNode } from 'graphql
 import { isNonNullType } from '../../graphql';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRenderer';
 import { FieldRenderer } from '../FieldRenderer';
-import { NonNullType } from './NonNullType';
 
 export class Field {
   constructor(
@@ -25,13 +24,6 @@ export class Field {
 
   // temporarily public
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    if (isNonNullType(typeNode)) {
-      const renderable = new NonNullType(this.fieldRenderer, generatedCodesForDirectives, typeNode);
-      const { isLazy, rendered } = renderable.render();
-      const maybeLazy = isLazy ? this.fieldRenderer.renderLazy(rendered) : rendered;
-      return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
-    }
-
     const { isLazy, rendered } = this.fieldRenderer.handleAllType(typeNode, generatedCodesForDirectives);
     const maybeLazy = isLazy ? this.fieldRenderer.renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
