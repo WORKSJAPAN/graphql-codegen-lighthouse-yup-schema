@@ -1,11 +1,9 @@
-import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { Renderable } from './Renderable';
 import { renderLazy } from './utils';
 
 export class ListType implements Renderable {
   constructor(
-    private readonly fieldRenderer: FieldRenderer,
     private readonly child: Renderable,
     private readonly isNonNull: boolean
   ) {}

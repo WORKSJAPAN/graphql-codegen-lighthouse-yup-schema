@@ -19,7 +19,7 @@ export class NodeFactory {
 
   private helper(typeNode: ListTypeNode | NamedTypeNode, isNonNull: boolean): Renderable {
     if (isListType(typeNode)) {
-      return new ListType(this.fieldRenderer, this.create(typeNode.type), isNonNull);
+      return new ListType(this.create(typeNode.type), isNonNull);
     }
     if (isNamedType(typeNode)) {
       return new NamedType(this.fieldRenderer, typeNode, isNonNull);
