@@ -28,7 +28,8 @@ export class Field {
   // temporarily public
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     const node = this.createNode(typeNode, generatedCodesForDirectives);
-    const { isLazy, rendered } = node.render();
+    const rendered = node.render();
+    const isLazy = node.shouldBeLazy();
     const maybeLazy = isLazy ? this.fieldRenderer.renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
   }
