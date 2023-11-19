@@ -1,0 +1,25 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.InitialEmitter = void 0;
+const visitor_plugin_common_1 = require("@graphql-codegen/visitor-plugin-common");
+class InitialEmitter {
+    constructor(withObjectTypesSpec) {
+        this.withObjectTypesSpec = withObjectTypesSpec;
+    }
+    emit(enumDeclarations) {
+        if (!this.withObjectTypesSpec.shouldIncludeUnion())
+            return '\n' + enumDeclarations.join('\n');
+        return '\n' + enumDeclarations.join('\n') + '\n' + this.unionFunctionDeclaration();
+    }
+    unionFunctionDeclaration() {
+        return new visitor_plugin_common_1.DeclarationBlock({})
+            .asKind('function')
+            .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
+            .withBlock([
+            (0, visitor_plugin_common_1.indent)('return yup.mixed<T>().test({'),
+            (0, visitor_plugin_common_1.indent)('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
+            (0, visitor_plugin_common_1.indent)('}).defined()'), // HACK: 型を合わせるために、union は undefined を許容しないこととした。問題が出たら考える。
+        ].join('\n')).string;
+    }
+}
+exports.InitialEmitter = InitialEmitter;

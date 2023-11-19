@@ -1,0 +1,33 @@
+import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
+import { GraphQLSchema } from 'graphql';
+import { ValidationSchemaPluginConfig } from '../config';
+import { Visitor } from '../visitor';
+import { DirectiveRenderer } from './DirectiveRenderer';
+import { FieldRenderer } from './FieldRenderer';
+import { ImportBuilder } from './ImportBuilder';
+import { InitialEmitter } from './InitialEmitter';
+import { Registry } from './registry';
+import { ScalarRenderer } from './ScalarRenderer';
+import { ShapeRenderer } from './ShapeRenderer';
+import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
+import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
+import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
+import { UnionTypesDefinitionFactory } from './visitFunctionFactories/UnionTypesDefinitionFactory';
+export declare class Kit {
+    private readonly schema;
+    private readonly config;
+    constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig);
+    getVisitor(): Visitor;
+    getWithObjectTypesSpec(): import("./withObjectTypesSpecs/WithObjectTypesSpec").WithObjectTypesSpec;
+    getExportTypesStrategy(): import("./exportTypeStrategies/ExportTypeStrategy").ExportTypeStrategy;
+    getFieldRenderer(scalarDirection: keyof NormalizedScalarsMap[string]): FieldRenderer;
+    getScalarRenderer(): ScalarRenderer;
+    getDirectiveRenderer(): DirectiveRenderer;
+    getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]): ShapeRenderer;
+    getImportBuilder(): ImportBuilder;
+    getInitialEmitter(): InitialEmitter;
+    getInputObjectTypeDefinitionFactory(registry: Registry): InputObjectTypeDefinitionFactory;
+    getObjectTypeDefinitionFactory(registry: Registry): ObjectTypeDefinitionFactory;
+    getEnumTypeDefinitionFactory(registry: Registry): EnumTypeDefinitionFactory;
+    getUnionTypesDefinitionFactory(registry: Registry): UnionTypesDefinitionFactory;
+}
