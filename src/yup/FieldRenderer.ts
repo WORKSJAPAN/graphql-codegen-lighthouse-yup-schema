@@ -9,7 +9,7 @@ import {
 } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { isInput, isListType, isNamedType, isNonNullType } from '../graphql';
+import { isInput, isListType, isNamedType, isNonNullType, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
@@ -109,7 +109,7 @@ export class FieldRenderer {
     const isLazy = this.isLazy(typeNode);
     const gen = this.generateNameNodeYupSchema(typeNode.name) + generatedCodesForDirectives.rules;
     if (isNonNull) {
-      const rendered = this.visitor.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)
+      const rendered = this.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
 
@@ -132,7 +132,7 @@ export class FieldRenderer {
   }
 
   private generateNameNodeYupSchema(node: NameNode): string {
-    const converter = this.visitor.getNameNodeConverter(node);
+    const converter = this.getNameNodeConverter(node);
 
     switch (converter?.targetKind) {
       case 'InputObjectTypeDefinition':
@@ -151,5 +151,29 @@ export class FieldRenderer {
 
   private renderLazy(schema: string): string {
     return `yup.lazy(() => ${schema})`;
+  }
+
+  private getNameNodeConverter(node: NameNode) {
+    const typ = this.visitor.getType(node.value);
+    const astNode = typ?.astNode;
+    if (astNode === undefined || astNode === null) {
+      return undefined;
+    }
+    return {
+      targetKind: astNode.kind,
+      convertName: () => this.visitor.convertName(astNode.name.value),
+    };
+  }
+
+  private shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: keyof NormalizedScalarsMap[string]): boolean {
+    if (this.config.notAllowEmptyString !== true) {
+      return false;
+    }
+    const typ = this.visitor.getType(name);
+    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
+      return false;
+    }
+    const tsType = this.visitor.getScalarType(name, scalarDirection);
+    return tsType === 'string';
   }
 }

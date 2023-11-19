@@ -81,7 +81,8 @@ export class Kit {
       this.getVisitor(),
       this.getWithObjectTypesSpec(),
       this.getExportTypesStrategy(),
-      this.getShapeRenderer('output')
+      this.getShapeRenderer('output'),
+      this.config.addUnderscoreToArgsType
     );
   }
 
