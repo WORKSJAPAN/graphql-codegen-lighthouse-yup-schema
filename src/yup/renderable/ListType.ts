@@ -1,6 +1,7 @@
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { Renderable } from './Renderable';
+import { renderLazy } from './utils';
 
 export class ListType implements Renderable {
   constructor(
@@ -17,7 +18,7 @@ export class ListType implements Renderable {
 
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
     const arrayContent = `${rendered}.defined()`;
-    const maybeLazy = isChildLazy ? this.fieldRenderer.renderLazy(arrayContent) : arrayContent;
+    const maybeLazy = isChildLazy ? renderLazy(arrayContent) : arrayContent;
 
     return `yup.array(${maybeLazy})${this.fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
       this.isNonNull ? '.defined()' : '.nullable()'

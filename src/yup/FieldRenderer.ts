@@ -1,5 +1,5 @@
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { FieldDefinitionNode, InputValueDefinitionNode, NamedTypeNode, NameNode, TypeNode } from 'graphql';
+import { FieldDefinitionNode, InputValueDefinitionNode, NamedTypeNode, NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { isInput, isSpecifiedScalarName } from '../graphql';
@@ -42,11 +42,6 @@ export class FieldRenderer {
 
   public isLazy(type: NamedTypeNode): boolean {
     return isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
-  }
-
-  // temporarily public
-  public renderLazy(schema: string): string {
-    return `yup.lazy(() => ${schema})`;
   }
 
   private getNameNodeConverter(node: NameNode) {

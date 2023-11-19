@@ -6,6 +6,7 @@ import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRend
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { NodeFactory } from './NodeFactory';
+import { renderLazy } from './utils';
 
 export class Field {
   constructor(
@@ -30,7 +31,7 @@ export class Field {
 
     const rendered = node.render();
     const isLazy = node.shouldBeLazy();
-    const maybeLazy = isLazy ? this.fieldRenderer.renderLazy(rendered) : rendered;
+    const maybeLazy = isLazy ? renderLazy(rendered) : rendered;
     return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
   }
 }
