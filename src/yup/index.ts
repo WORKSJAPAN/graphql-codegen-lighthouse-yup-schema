@@ -9,9 +9,9 @@ import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
+import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
 import { UnionTypesDefinitionFactory } from './visitFunctionFactories/UnionTypesDefinitionFactory';
 import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
-import { ObjectTypeDefinitionFactory } from './withObjectTypesSpecs/ObjectTypeDefinitionFactory';
 
 export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private readonly registry: Registry = new Registry();

@@ -9,8 +9,8 @@ import { ExportTypeStrategy } from '../exportTypeStrategies/ExportTypeStrategy';
 import { createExportTypeStrategy } from '../exportTypeStrategies/factory';
 import { Registry } from '../registry';
 import { ScalarRenderer } from '../ScalarRenderer';
-import { VisitFunctionFactory } from '../visitFunctionFactories/types';
-import { WithObjectTypesSpec } from './WithObjectTypesSpec';
+import { WithObjectTypesSpec } from '../withObjectTypesSpecs/WithObjectTypesSpec';
+import { VisitFunctionFactory } from './types';
 
 export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectTypeDefinitionNode> {
   private readonly scalarRenderer: ScalarRenderer;
