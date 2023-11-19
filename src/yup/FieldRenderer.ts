@@ -7,6 +7,7 @@ import { Visitor } from '../visitor';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
+import { ListType } from './renderable/ListType';
 import { NonNullType } from './renderable/NonNullType';
 import { ScalarRenderer } from './ScalarRenderer';
 
@@ -35,7 +36,8 @@ export class FieldRenderer {
   // temporarily public
   public handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): RenderResult {
     if (isListType(typeNode)) {
-      return this.renderList(typeNode.type, false, generatedCodesForDirectives);
+      const renderable = new ListType(this, generatedCodesForDirectives, typeNode, false);
+      return renderable.render();
     }
     if (isNonNullType(typeNode)) {
       const renderable = new NonNullType(this, generatedCodesForDirectives, typeNode);
@@ -48,26 +50,6 @@ export class FieldRenderer {
     return {
       isLazy: false,
       rendered: '',
-    };
-  }
-
-  // すべてが入りうる
-  public renderList(
-    innerTypeNode: TypeNode,
-    isNonNull: boolean,
-    generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): RenderResult {
-    const { isLazy, rendered } = this.handleAllType(innerTypeNode, generatedCodesForDirectives);
-
-    // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
-    const arrayContent = `${rendered}.defined()`;
-    const maybeLazy = isLazy ? this.renderLazy(arrayContent) : arrayContent;
-
-    return {
-      isLazy: false,
-      rendered: `yup.array(${maybeLazy})${generatedCodesForDirectives.rulesForArray}${
-        isNonNull ? '.defined()' : '.nullable()'
-      }`,
     };
   }
 
