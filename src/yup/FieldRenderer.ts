@@ -1,5 +1,13 @@
 import { indent, NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { FieldDefinitionNode, InputValueDefinitionNode, NameNode, TypeNode } from 'graphql';
+import {
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  ListTypeNode,
+  NamedTypeNode,
+  NameNode,
+  NonNullTypeNode,
+  TypeNode,
+} from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, GeneratedCodesForDirectives } from '../directive';
@@ -23,44 +31,67 @@ export class FieldRenderer {
       this.config.ignoreRules ?? [],
       field.directives ?? []
     );
-    const gen = this.generateFieldTypeYupSchema(field.type, null, generatedCodesForDirectives);
+    const gen = this.helper(field.type, null, generatedCodesForDirectives);
     const ret = indent(`${field.name.value}: ${this.maybeLazy(field.type, gen)}`, indentCount);
     return isNonNullType(field.type) ? ret : `${ret}.optional()`;
   }
 
-  private generateFieldTypeYupSchema(
-    type: TypeNode,
+  private helper(
+    typeNode: TypeNode,
     parentType: TypeNode | null,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
-    if (isListType(type)) {
-      const gen = this.generateFieldTypeYupSchema(type.type, type, generatedCodesForDirectives);
-      const nullable = !parentType || !isNonNullType(parentType);
-      // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
-      return `yup.array(${this.maybeLazy(type.type, `${gen}.defined()`)})${generatedCodesForDirectives.rulesForArray}${
-        nullable ? '.nullable()' : '.defined()'
-      }`;
+    if (isListType(typeNode)) {
+      return this.handleListType(typeNode, parentType, generatedCodesForDirectives);
     }
-    if (isNonNullType(type)) {
-      const gen = this.generateFieldTypeYupSchema(type.type, type, generatedCodesForDirectives);
-      return this.maybeLazy(type.type, gen);
+    if (isNonNullType(typeNode)) {
+      return this.handleNonNullType(typeNode, generatedCodesForDirectives);
     }
-    if (isNamedType(type)) {
-      const gen = this.generateNameNodeYupSchema(type.name) + generatedCodesForDirectives.rules;
-      if (!!parentType && isNonNullType(parentType)) {
-        if (this.visitor.shouldEmitAsNotAllowEmptyString(type.name.value, this.scalarDirection)) {
-          return `${gen}.defined().required()`;
-        }
-        return `${gen}.defined().nonNullable()`;
-      }
-      const typ = this.visitor.getType(type.name.value);
-      if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
-        return `${gen}`;
-      }
-      return `${gen}.nullable()`;
+    if (isNamedType(typeNode)) {
+      return this.handleNamedType(typeNode, parentType, generatedCodesForDirectives);
     }
-    console.warn('unhandled type:', type);
+    console.warn('unhandled type:', typeNode);
     return '';
+  }
+
+  private handleListType(
+    typeNode: ListTypeNode,
+    parentType: TypeNode | null,
+    generatedCodesForDirectives: GeneratedCodesForDirectives
+  ): string {
+    const gen = this.helper(typeNode.type, typeNode, generatedCodesForDirectives);
+    const nullable = !parentType || !isNonNullType(parentType);
+    // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
+    return `yup.array(${this.maybeLazy(typeNode.type, `${gen}.defined()`)})${
+      generatedCodesForDirectives.rulesForArray
+    }${nullable ? '.nullable()' : '.defined()'}`;
+  }
+
+  private handleNonNullType(
+    typeNode: NonNullTypeNode,
+    generatedCodesForDirectives: GeneratedCodesForDirectives
+  ): string {
+    const gen = this.helper(typeNode.type, typeNode, generatedCodesForDirectives);
+    return this.maybeLazy(typeNode.type, gen);
+  }
+
+  private handleNamedType(
+    typeNode: NamedTypeNode,
+    parentType: TypeNode | null,
+    generatedCodesForDirectives: GeneratedCodesForDirectives
+  ): string {
+    const gen = this.generateNameNodeYupSchema(typeNode.name) + generatedCodesForDirectives.rules;
+    if (!!parentType && isNonNullType(parentType)) {
+      if (this.visitor.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)) {
+        return `${gen}.defined().required()`;
+      }
+      return `${gen}.defined().nonNullable()`;
+    }
+    const typ = this.visitor.getType(typeNode.name.value);
+    if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
+      return `${gen}`;
+    }
+    return `${gen}.nullable()`;
   }
 
   private generateNameNodeYupSchema(node: NameNode): string {
