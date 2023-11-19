@@ -1,3 +1,5 @@
+import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
+
 import { Visitor } from '../visitor';
 
 export class ScalarRenderer {
@@ -6,7 +8,7 @@ export class ScalarRenderer {
     private readonly visitor: Visitor
   ) {}
 
-  public render(scalarName: string, scalarDirection: 'input' | 'output' | 'both'): string {
+  public render(scalarName: string, scalarDirection: keyof NormalizedScalarsMap[string]): string {
     if (this.scalarSchemas[scalarName]) {
       return `${this.scalarSchemas[scalarName]}`;
     }
