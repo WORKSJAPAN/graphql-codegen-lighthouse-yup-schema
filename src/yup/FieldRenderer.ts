@@ -15,6 +15,11 @@ import { Visitor } from '../visitor';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { ScalarRenderer } from './ScalarRenderer';
 
+type RenderResult = {
+  rendered: string;
+  isLazy: boolean;
+};
+
 export class FieldRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
@@ -31,17 +36,18 @@ export class FieldRenderer {
       this.config.ignoreRules ?? [],
       field.directives ?? []
     );
-    const gen = this.handleTopLevelField(field.type, generatedCodesForDirectives);
+    const gen = this.renderTopLevelField(field.type, generatedCodesForDirectives);
     // TODO: ここで特定のディレクティブの有無によりlazyを入れる
     return indent(`${field.name.value}: ${gen}`, indentCount);
   }
 
-  private handleTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    const ret = this.maybeLazy(typeNode, this.handleAllType(typeNode, generatedCodesForDirectives));
-    return isNonNullType(typeNode) ? ret : `${ret}.optional()`;
+  private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+    const { isLazy, rendered } = this.handleAllType(typeNode, generatedCodesForDirectives);
+    const maybeLazy = isLazy ? this.renderLazy(rendered) : rendered;
+    return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
   }
 
-  private handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+  private handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): RenderResult {
     if (isListType(typeNode)) {
       return this.renderList(typeNode.type, false, generatedCodesForDirectives);
     }
@@ -52,7 +58,10 @@ export class FieldRenderer {
       return this.renderNamedType(typeNode, false, generatedCodesForDirectives);
     }
     console.warn('unhandled type:', typeNode);
-    return '';
+    return {
+      isLazy: false,
+      rendered: '',
+    };
   }
 
   // NonNull がネストすることはない
@@ -60,15 +69,18 @@ export class FieldRenderer {
   private withNonNull(
     innerTypeNode: ListTypeNode | NamedTypeNode,
     generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): string {
+  ): RenderResult {
     if (isListType(innerTypeNode)) {
       return this.renderList(innerTypeNode.type, true, generatedCodesForDirectives);
     }
     if (isNamedType(innerTypeNode)) {
-      return this.maybeLazy(innerTypeNode, this.renderNamedType(innerTypeNode, true, generatedCodesForDirectives));
+      return this.renderNamedType(innerTypeNode, true, generatedCodesForDirectives);
     }
     console.warn('unhandled type:', innerTypeNode);
-    return '';
+    return {
+      isLazy: false,
+      rendered: '',
+    };
   }
 
   // すべてが入りうる
@@ -76,13 +88,19 @@ export class FieldRenderer {
     innerTypeNode: TypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): string {
-    const gen = this.handleAllType(innerTypeNode, generatedCodesForDirectives);
-    const nullable = !isNonNull;
+  ): RenderResult {
+    const { isLazy, rendered } = this.handleAllType(innerTypeNode, generatedCodesForDirectives);
+
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
-    return `yup.array(${this.maybeLazy(innerTypeNode, `${gen}.defined()`)})${
-      generatedCodesForDirectives.rulesForArray
-    }${nullable ? '.nullable()' : '.defined()'}`;
+    const arrayContent = `${rendered}.defined()`;
+    const maybeLazy = isLazy ? this.renderLazy(arrayContent) : arrayContent;
+    const nullable = !isNonNull;
+    return {
+      isLazy: false,
+      rendered: `yup.array(${maybeLazy})${generatedCodesForDirectives.rulesForArray}${
+        nullable ? '.nullable()' : '.defined()'
+      }`,
+    };
   }
 
   // leaf. ends recursion
@@ -90,19 +108,32 @@ export class FieldRenderer {
     typeNode: NamedTypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): string {
+  ): RenderResult {
+    const isLazy = this.isLazy(typeNode);
     const gen = this.generateNameNodeYupSchema(typeNode.name) + generatedCodesForDirectives.rules;
     if (isNonNull) {
       if (this.visitor.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)) {
-        return `${gen}.defined().required()`;
+        return {
+          isLazy,
+          rendered: `${gen}.defined().required()`,
+        };
       }
-      return `${gen}.defined().nonNullable()`;
+      return {
+        isLazy,
+        rendered: `${gen}.defined().nonNullable()`,
+      };
     }
     const typ = this.visitor.getType(typeNode.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
-      return `${gen}`;
+      return {
+        isLazy,
+        rendered: `${gen}`,
+      };
     }
-    return `${gen}.nullable()`;
+    return {
+      isLazy,
+      rendered: `${gen}.nullable()`,
+    };
   }
 
   private generateNameNodeYupSchema(node: NameNode): string {
@@ -122,16 +153,8 @@ export class FieldRenderer {
     }
   }
 
-  private maybeLazy(type: TypeNode, schema: string): string {
-    if (this.isLazy(type)) {
-      // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
-      return `yup.lazy(() => ${schema})`;
-    }
-    return schema;
-  }
-
-  private isLazy(type: TypeNode): boolean {
-    return isNamedType(type) && isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
+  private isLazy(type: NamedTypeNode): boolean {
+    return isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
   }
 
   private renderLazy(schema: string): string {
