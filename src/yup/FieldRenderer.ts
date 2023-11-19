@@ -12,7 +12,7 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { isInput, isListType, isNamedType, isNonNullType } from '../graphql';
 import { Visitor } from '../visitor';
-import { createExportTypeStrategy } from './exportTypeStrategies/factory';
+import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { ScalarRenderer } from './ScalarRenderer';
 
 type RenderResult = {
@@ -24,6 +24,7 @@ export class FieldRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
+    private readonly exportTypeStrategy: ExportTypeStrategy,
     private readonly scalarRenderer: ScalarRenderer,
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
@@ -142,10 +143,7 @@ export class FieldRenderer {
       case 'ObjectTypeDefinition':
       case 'UnionTypeDefinition':
       case 'EnumTypeDefinition':
-        return createExportTypeStrategy(this.config.validationSchemaExportType).schemaEvaluation(
-          `${converter.convertName()}Schema`,
-          converter?.targetKind
-        );
+        return this.exportTypeStrategy.schemaEvaluation(`${converter.convertName()}Schema`, converter?.targetKind);
       default:
         return this.scalarRenderer.render(node.value, this.scalarDirection);
     }

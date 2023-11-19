@@ -37,7 +37,13 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       visitor,
       exportTypeStrategy,
       new ShapeRenderer(
-        new FieldRenderer(config, visitor, new ScalarRenderer(config.scalarSchemas ?? {}, visitor), 'input')
+        new FieldRenderer(
+          config,
+          visitor,
+          exportTypeStrategy,
+          new ScalarRenderer(config.scalarSchemas ?? {}, visitor),
+          'input'
+        )
       )
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
@@ -46,7 +52,13 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
       withObjectTypesSpec,
       exportTypeStrategy,
       new ShapeRenderer(
-        new FieldRenderer(config, visitor, new ScalarRenderer(config.scalarSchemas ?? {}, visitor), 'output')
+        new FieldRenderer(
+          config,
+          visitor,
+          exportTypeStrategy,
+          new ScalarRenderer(config.scalarSchemas ?? {}, visitor),
+          'output'
+        )
       )
     );
     this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(config.enumsAsTypes, this.registry, visitor);
