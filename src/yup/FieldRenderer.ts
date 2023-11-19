@@ -12,7 +12,8 @@ export class FieldRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
-    private readonly scalarRenderer: ScalarRenderer
+    private readonly scalarRenderer: ScalarRenderer,
+    private readonly scalarDirection: 'input' | 'output' | 'both'
   ) {}
 
   public render(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
@@ -47,7 +48,7 @@ export class FieldRenderer {
     if (isNamedType(type)) {
       const gen = this.generateNameNodeYupSchema(type.name) + generatedCodesForDirectives.rules;
       if (!!parentType && isNonNullType(parentType)) {
-        if (this.visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+        if (this.visitor.shouldEmitAsNotAllowEmptyString(type.name.value, this.scalarDirection)) {
           return `${gen}.defined().required()`;
         }
         return `${gen}.defined().nonNullable()`;
@@ -75,7 +76,7 @@ export class FieldRenderer {
           converter?.targetKind
         );
       default:
-        return this.scalarRenderer.render(node.value);
+        return this.scalarRenderer.render(node.value, this.scalarDirection);
     }
   }
 

@@ -6,7 +6,6 @@ import { isSpecifiedScalarName } from './graphql';
 
 export class Visitor extends TsVisitor {
   constructor(
-    private scalarDirection: 'input' | 'output' | 'both',
     private schema: GraphQLSchema,
     private pluginConfig: ValidationSchemaPluginConfig
   ) {
@@ -29,14 +28,14 @@ export class Visitor extends TsVisitor {
     };
   }
 
-  public getScalarType(scalarName: string): string | null {
-    if (this.scalarDirection === 'both') {
+  public getScalarType(scalarName: string, scalarDirection: 'input' | 'output' | 'both'): string | null {
+    if (scalarDirection === 'both') {
       return null;
     }
-    return this.scalars[scalarName][this.scalarDirection];
+    return this.scalars[scalarName][scalarDirection];
   }
 
-  public shouldEmitAsNotAllowEmptyString(name: string): boolean {
+  public shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: 'input' | 'output' | 'both'): boolean {
     if (this.pluginConfig.notAllowEmptyString !== true) {
       return false;
     }
@@ -44,7 +43,7 @@ export class Visitor extends TsVisitor {
     if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
       return false;
     }
-    const tsType = this.getScalarType(name);
+    const tsType = this.getScalarType(name, scalarDirection);
     return tsType === 'string';
   }
 

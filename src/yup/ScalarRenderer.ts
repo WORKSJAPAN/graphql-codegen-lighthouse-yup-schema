@@ -6,11 +6,11 @@ export class ScalarRenderer {
     private readonly visitor: Visitor
   ) {}
 
-  public render(scalarName: string): string {
+  public render(scalarName: string, scalarDirection: 'input' | 'output' | 'both'): string {
     if (this.scalarSchemas[scalarName]) {
       return `${this.scalarSchemas[scalarName]}`;
     }
-    const tsType = this.visitor.getScalarType(scalarName);
+    const tsType = this.visitor.getScalarType(scalarName, scalarDirection);
     switch (tsType) {
       case 'string':
         return `yup.string()`;

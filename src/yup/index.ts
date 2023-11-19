@@ -2,7 +2,7 @@ import { GraphQLSchema } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { Interpreter, NewVisitor } from '../types';
-import { VisitorFactory } from '../VisitorFactory';
+import { Visitor } from '../visitor';
 import { createExportTypeStrategy } from './exportTypeStrategies/factory';
 import { FieldRenderer } from './FieldRenderer';
 import { ImportBuilder } from './ImportBuilder';
@@ -26,7 +26,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
   private readonly unionTypesDefinitionFactory: UnionTypesDefinitionFactory;
 
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
-    const visitorFactory = new VisitorFactory(schema, config);
+    const visitor = new Visitor(schema, config);
     const exportTypeStrategy = createExportTypeStrategy(config.validationSchemaExportType);
     const withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
 
@@ -34,37 +34,25 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     this.initialEmitter = new InitialEmitter(withObjectTypesSpec);
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
       this.registry,
-      visitorFactory.createVisitor('input'),
+      visitor,
       exportTypeStrategy,
       new ShapeRenderer(
-        new FieldRenderer(
-          config,
-          visitorFactory.createVisitor('input'),
-          new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('input'))
-        )
+        new FieldRenderer(config, visitor, new ScalarRenderer(config.scalarSchemas ?? {}, visitor), 'input')
       )
     );
     this.objectTypeDefinitionFactory = new ObjectTypeDefinitionFactory(
       this.registry,
-      visitorFactory.createVisitor('output'),
+      visitor,
       withObjectTypesSpec,
       exportTypeStrategy,
       new ShapeRenderer(
-        new FieldRenderer(
-          config,
-          visitorFactory.createVisitor('output'),
-          new ScalarRenderer(config.scalarSchemas ?? {}, visitorFactory.createVisitor('output'))
-        )
+        new FieldRenderer(config, visitor, new ScalarRenderer(config.scalarSchemas ?? {}, visitor), 'output')
       )
     );
-    this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(
-      config.enumsAsTypes,
-      this.registry,
-      visitorFactory.createVisitor('both')
-    );
+    this.enumTypeDefinitionFactory = new EnumTypeDefinitionFactory(config.enumsAsTypes, this.registry, visitor);
     this.unionTypesDefinitionFactory = new UnionTypesDefinitionFactory(
       this.registry,
-      visitorFactory.createVisitor('output'),
+      visitor,
       withObjectTypesSpec,
       exportTypeStrategy
     );
