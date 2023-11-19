@@ -1,12 +1,5 @@
-import { indent, NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import {
-  FieldDefinitionNode,
-  InputValueDefinitionNode,
-  ListTypeNode,
-  NamedTypeNode,
-  NameNode,
-  TypeNode,
-} from 'graphql';
+import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
+import { FieldDefinitionNode, InputValueDefinitionNode, NamedTypeNode, NameNode, TypeNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { isInput, isListType, isNamedType, isNonNullType, isSpecifiedScalarName } from '../graphql';
@@ -14,6 +7,7 @@ import { Visitor } from '../visitor';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
+import { NonNullType } from './renderable/NonNullType';
 import { ScalarRenderer } from './ScalarRenderer';
 
 type RenderResult = {
@@ -44,7 +38,8 @@ export class FieldRenderer {
       return this.renderList(typeNode.type, false, generatedCodesForDirectives);
     }
     if (isNonNullType(typeNode)) {
-      return this.withNonNull(typeNode.type, generatedCodesForDirectives);
+      const renderable = new NonNullType(this, generatedCodesForDirectives, typeNode);
+      return renderable.render();
     }
     if (isNamedType(typeNode)) {
       return this.renderNamedType(typeNode, false, generatedCodesForDirectives);
@@ -56,28 +51,8 @@ export class FieldRenderer {
     };
   }
 
-  // temporarily public
-  // NonNull がネストすることはない
-  // NonNull をどうレンダリングするかは子の型によって変わる
-  public withNonNull(
-    innerTypeNode: ListTypeNode | NamedTypeNode,
-    generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): RenderResult {
-    if (isListType(innerTypeNode)) {
-      return this.renderList(innerTypeNode.type, true, generatedCodesForDirectives);
-    }
-    if (isNamedType(innerTypeNode)) {
-      return this.renderNamedType(innerTypeNode, true, generatedCodesForDirectives);
-    }
-    console.warn('unhandled type:', innerTypeNode);
-    return {
-      isLazy: false,
-      rendered: '',
-    };
-  }
-
   // すべてが入りうる
-  private renderList(
+  public renderList(
     innerTypeNode: TypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
@@ -97,7 +72,7 @@ export class FieldRenderer {
   }
 
   // leaf. ends recursion
-  private renderNamedType(
+  public renderNamedType(
     typeNode: NamedTypeNode,
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
