@@ -9,6 +9,7 @@ import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
 import { FieldMetadata } from './renderable/FieldMetadata';
 import { ListType } from './renderable/ListType';
+import { NamedType } from './renderable/NamedType';
 import { NonNullType } from './renderable/NonNullType';
 import { ScalarRenderer } from './ScalarRenderer';
 
@@ -45,7 +46,8 @@ export class FieldRenderer {
       return renderable.render();
     }
     if (isNamedType(typeNode)) {
-      return this.renderNamedType(typeNode, false, generatedCodesForDirectives);
+      const renderable = new NamedType(this, new FieldMetadata(generatedCodesForDirectives), typeNode, false);
+      return renderable.render();
     }
     console.warn('unhandled type:', typeNode);
     return {
@@ -54,38 +56,7 @@ export class FieldRenderer {
     };
   }
 
-  // leaf. ends recursion
-  public renderNamedType(
-    typeNode: NamedTypeNode,
-    isNonNull: boolean,
-    generatedCodesForDirectives: GeneratedCodesForDirectives
-  ): RenderResult {
-    const isLazy = this.isLazy(typeNode);
-    const gen = this.generateNameNodeYupSchema(typeNode.name) + generatedCodesForDirectives.rules;
-    if (isNonNull) {
-      const rendered = this.shouldEmitAsNotAllowEmptyString(typeNode.name.value, this.scalarDirection)
-        ? `${gen}.defined().required()`
-        : `${gen}.defined().nonNullable()`;
-
-      return {
-        isLazy,
-        rendered,
-      };
-    }
-    const typ = this.visitor.getType(typeNode.name.value);
-    if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
-      return {
-        isLazy,
-        rendered: `${gen}`,
-      };
-    }
-    return {
-      isLazy,
-      rendered: `${gen}.nullable()`,
-    };
-  }
-
-  private generateNameNodeYupSchema(node: NameNode): string {
+  public generateNameNodeYupSchema(node: NameNode): string {
     const converter = this.getNameNodeConverter(node);
 
     switch (converter?.targetKind) {
@@ -99,7 +70,7 @@ export class FieldRenderer {
     }
   }
 
-  private isLazy(type: NamedTypeNode): boolean {
+  public isLazy(type: NamedTypeNode): boolean {
     return isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
   }
 
@@ -120,7 +91,7 @@ export class FieldRenderer {
     };
   }
 
-  private shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: keyof NormalizedScalarsMap[string]): boolean {
+  public shouldEmitAsNotAllowEmptyString(name: string): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }
@@ -128,7 +99,11 @@ export class FieldRenderer {
     if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
       return false;
     }
-    const tsType = this.visitor.getScalarType(name, scalarDirection);
+    const tsType = this.visitor.getScalarType(name, this.scalarDirection);
     return tsType === 'string';
+  }
+
+  public getVisitor() {
+    return this.visitor;
   }
 }
