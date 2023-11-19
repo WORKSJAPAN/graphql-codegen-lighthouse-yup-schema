@@ -28,7 +28,7 @@ export class YupSchemaVisitor implements NewVisitor, Interpreter {
     const withObjectTypesSpec = createWithObjectTypesSpec(config.withObjectType);
 
     this.importBuilder = new ImportBuilder(config.importFrom, config.useTypeImports);
-    this.initialEmitter = new InitialEmitter(config.withObjectType);
+    this.initialEmitter = new InitialEmitter(withObjectTypesSpec);
     this.inputObjectTypeDefinitionFactory = new InputObjectTypeDefinitionFactory(
       config,
       this.registry,

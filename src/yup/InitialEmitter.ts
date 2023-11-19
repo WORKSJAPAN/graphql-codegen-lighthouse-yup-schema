@@ -1,12 +1,13 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 
 import { ValidationSchemaPluginConfig } from '../config';
+import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class InitialEmitter {
-  constructor(private readonly withObjectType: ValidationSchemaPluginConfig['withObjectType']) {}
+  constructor(private readonly withObjectTypesSpec: WithObjectTypesSpec) {}
 
   emit(enumDeclarations: readonly string[]): string {
-    if (!this.withObjectType) return '\n' + enumDeclarations.join('\n');
+    if (!this.withObjectTypesSpec.shouldIncludeUnion()) return '\n' + enumDeclarations.join('\n');
     return '\n' + enumDeclarations.join('\n') + '\n' + this.unionFunctionDeclaration();
   }
 
