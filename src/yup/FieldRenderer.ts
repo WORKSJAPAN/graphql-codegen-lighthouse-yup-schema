@@ -17,17 +17,21 @@ export class FieldRenderer {
     private readonly scalarRenderer: ScalarRenderer
   ) {}
 
-  public renderInputField(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[], name: string) {
-    const shape = fields
-      ?.map(field => {
-        return this.renderField(field, 2);
-      })
-      .join(',\n');
+  public renderInputFieldsShape(fields: readonly InputValueDefinitionNode[], name: string) {
+    const shape = this.renderFieldsShapeContent(fields);
 
     return this.exportTypeStrategy.buildInputFields(shape, name);
   }
 
-  public renderField(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
+  public renderFieldsShapeContent(fields: readonly (InputValueDefinitionNode | FieldDefinitionNode)[]) {
+    return fields
+      ?.map(field => {
+        return this.renderField(field, 2);
+      })
+      .join(',\n');
+  }
+
+  private renderField(field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
     const generatedCodesForDirectives = buildApi(
       field.name.value,
       this.config.rules ?? {},

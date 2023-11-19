@@ -16,7 +16,7 @@ export class InputObjectTypeDefinitionFactory implements VisitFunctionFactory<In
     return (node: InputObjectTypeDefinitionNode) => {
       const name = this.visitor.convertName(node.name.value);
       this.registry.registerType(name);
-      return this.fieldRenderer.renderInputField(node.fields ?? [], name);
+      return this.fieldRenderer.renderInputFieldsShape(node.fields ?? [], name);
     };
   }
 }

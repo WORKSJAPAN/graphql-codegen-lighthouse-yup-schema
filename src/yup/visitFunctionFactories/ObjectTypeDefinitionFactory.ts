@@ -27,19 +27,14 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
       // Building schema for field arguments.
       const argumentBlocks = this.visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
         this.registry.registerType(typeName);
-        return this.fieldRenderer.renderInputField(field.arguments ?? [], typeName);
+        return this.fieldRenderer.renderInputFieldsShape(field.arguments ?? [], typeName);
       });
       const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
       // Building schema for fields.
-      const shape =
-        node.fields
-          ?.map(field => {
-            return this.fieldRenderer.renderField(field, 2);
-          })
-          .join(',\n') ?? '';
+      const shapeContent = this.fieldRenderer.renderFieldsShapeContent(node.fields ?? []);
 
-      return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shape, appendArguments);
+      return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shapeContent, appendArguments);
     };
   }
 }
