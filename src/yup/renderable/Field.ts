@@ -1,14 +1,11 @@
 import { indent } from '@graphql-codegen/visitor-plugin-common';
 import { FieldDefinitionNode, InputValueDefinitionNode, TypeNode } from 'graphql';
 
-import { isListType, isNamedType, isNonNullType } from '../../graphql';
+import { isNonNullType } from '../../graphql';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRenderer';
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
-import { ListType } from './ListType';
-import { NamedType } from './NamedType';
-import { NonNullType } from './NonNullType';
-import { NullRenderable } from './NullRenderer';
+import { NodeFactory } from './NodeFactory';
 import { Renderable } from './Renderable';
 
 export class Field {
@@ -37,15 +34,7 @@ export class Field {
   }
 
   private createNode(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): Renderable {
-    if (isListType(typeNode)) {
-      return new ListType(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives), typeNode, false);
-    }
-    if (isNonNullType(typeNode)) {
-      return new NonNullType(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives), typeNode);
-    }
-    if (isNamedType(typeNode)) {
-      return new NamedType(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives), typeNode, false);
-    }
-    return new NullRenderable(typeNode);
+    const nodeFactory = new NodeFactory(this.fieldRenderer, new FieldMetadata(generatedCodesForDirectives));
+    return nodeFactory.create(typeNode);
   }
 }
