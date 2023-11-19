@@ -2,21 +2,12 @@ import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 import { FieldDefinitionNode, InputValueDefinitionNode, NamedTypeNode, NameNode, TypeNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { isInput, isListType, isNamedType, isNonNullType, isSpecifiedScalarName } from '../graphql';
+import { isInput, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
-import { DirectiveRenderer, GeneratedCodesForDirectives } from './DirectiveRenderer';
+import { DirectiveRenderer } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/Field';
-import { FieldMetadata } from './renderable/FieldMetadata';
-import { ListType } from './renderable/ListType';
-import { NamedType } from './renderable/NamedType';
-import { NonNullType } from './renderable/NonNullType';
 import { ScalarRenderer } from './ScalarRenderer';
-
-type RenderResult = {
-  rendered: string;
-  isLazy: boolean;
-};
 
 export class FieldRenderer {
   constructor(
@@ -33,27 +24,6 @@ export class FieldRenderer {
     const astField = new Field(this, this.directiveRenderer, field);
 
     return astField.render();
-  }
-
-  // temporarily public
-  public handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): RenderResult {
-    if (isListType(typeNode)) {
-      const renderable = new ListType(this, new FieldMetadata(generatedCodesForDirectives), typeNode, false);
-      return renderable.render();
-    }
-    if (isNonNullType(typeNode)) {
-      const renderable = new NonNullType(this, new FieldMetadata(generatedCodesForDirectives), typeNode);
-      return renderable.render();
-    }
-    if (isNamedType(typeNode)) {
-      const renderable = new NamedType(this, new FieldMetadata(generatedCodesForDirectives), typeNode, false);
-      return renderable.render();
-    }
-    console.warn('unhandled type:', typeNode);
-    return {
-      isLazy: false,
-      rendered: '',
-    };
   }
 
   public generateNameNodeYupSchema(node: NameNode): string {

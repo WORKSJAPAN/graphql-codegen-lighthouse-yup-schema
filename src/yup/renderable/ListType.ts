@@ -1,5 +1,3 @@
-import { ListTypeNode } from 'graphql';
-
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { Renderable } from './Renderable';
@@ -8,16 +6,12 @@ export class ListType implements Renderable {
   constructor(
     readonly fieldRenderer: FieldRenderer,
     readonly fieldMetadata: FieldMetadata,
-    readonly listTypeNode: ListTypeNode,
+    readonly child: Renderable,
     readonly isNonNull: boolean
   ) {}
 
   public render() {
-    const innerTypeNode = this.listTypeNode.type;
-    const { isLazy, rendered } = this.fieldRenderer.handleAllType(
-      innerTypeNode,
-      this.fieldMetadata.getGeneratedCodesForDirectives()
-    );
+    const { isLazy, rendered } = this.child.render();
 
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
     const arrayContent = `${rendered}.defined()`;

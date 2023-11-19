@@ -17,7 +17,7 @@ export class NodeFactory {
 
   public create(typeNode: TypeNode): Renderable {
     if (isListType(typeNode)) {
-      return new ListType(this.fieldRenderer, this.fieldMetadata, typeNode, false);
+      return new ListType(this.fieldRenderer, this.fieldMetadata, this.create(typeNode.type), false);
     }
     if (isNonNullType(typeNode)) {
       return new NonNullType(this.fieldRenderer, this.fieldMetadata, typeNode);

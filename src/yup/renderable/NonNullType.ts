@@ -5,6 +5,7 @@ import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 import { ListType } from './ListType';
 import { NamedType } from './NamedType';
+import { NodeFactory } from './NodeFactory';
 import { Renderable } from './Renderable';
 
 export class NonNullType implements Renderable {
@@ -17,7 +18,13 @@ export class NonNullType implements Renderable {
   public render() {
     const innerNodeType = this.nonNullTypeNode.type;
     if (isListType(innerNodeType)) {
-      const renderable = new ListType(this.fieldRenderer, this.fieldMetadata, innerNodeType, true);
+      const nodeFactory = new NodeFactory(this.fieldRenderer, this.fieldMetadata);
+      const renderable = new ListType(
+        this.fieldRenderer,
+        this.fieldMetadata,
+        nodeFactory.create(innerNodeType.type),
+        true
+      );
       return renderable.render();
     }
     if (isNamedType(innerNodeType)) {
