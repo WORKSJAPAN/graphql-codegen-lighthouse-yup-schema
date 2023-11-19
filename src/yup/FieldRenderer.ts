@@ -37,11 +37,12 @@ export class FieldRenderer {
   }
 
   private handleTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    const ret = this.maybeLazy(typeNode, this.helper(typeNode, generatedCodesForDirectives));
+    // TODO: ここで特定のディレクティブの有無によりlazyを入れる
+    const ret = this.maybeLazy(typeNode, this.handleAllType(typeNode, generatedCodesForDirectives));
     return isNonNullType(typeNode) ? ret : `${ret}.optional()`;
   }
 
-  private helper(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
+  private handleAllType(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     if (isListType(typeNode)) {
       return this.handleListType(typeNode, false, generatedCodesForDirectives);
     }
@@ -55,14 +56,18 @@ export class FieldRenderer {
     return '';
   }
 
-  private withNonNull(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
-    if (isListType(typeNode)) {
-      return this.handleListType(typeNode, true, generatedCodesForDirectives);
+  // NonNull がネストすることはない
+  private withNonNull(
+    innerTypeNode: ListTypeNode | NamedTypeNode,
+    generatedCodesForDirectives: GeneratedCodesForDirectives
+  ): string {
+    if (isListType(innerTypeNode)) {
+      return this.handleListType(innerTypeNode, true, generatedCodesForDirectives);
     }
-    if (isNamedType(typeNode)) {
-      return this.handleNamedType(typeNode, true, generatedCodesForDirectives);
+    if (isNamedType(innerTypeNode)) {
+      return this.handleNamedType(innerTypeNode, true, generatedCodesForDirectives);
     }
-    console.warn('unhandled type:', typeNode);
+    console.warn('unhandled type:', innerTypeNode);
     return '';
   }
 
@@ -71,7 +76,7 @@ export class FieldRenderer {
     isNonNull: boolean,
     generatedCodesForDirectives: GeneratedCodesForDirectives
   ): string {
-    const gen = this.helper(typeNode.type, generatedCodesForDirectives);
+    const gen = this.handleAllType(typeNode.type, generatedCodesForDirectives);
     const nullable = !isNonNull;
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
     return `yup.array(${this.maybeLazy(typeNode.type, `${gen}.defined()`)})${
