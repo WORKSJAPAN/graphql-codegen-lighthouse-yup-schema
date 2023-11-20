@@ -28,7 +28,6 @@ export class SchemaASTFactory {
     }
     if (isNamedType(graphQLTypeNode)) {
       const ret = new SchemaASTNamedTypeNode(
-        graphQLTypeNode,
         graphQLTypeNode.name.value,
         this.convertedName(graphQLTypeNode.name),
         this.targetKind(graphQLTypeNode.name),

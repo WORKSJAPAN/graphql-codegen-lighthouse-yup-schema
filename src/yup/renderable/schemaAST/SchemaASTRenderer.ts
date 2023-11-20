@@ -37,19 +37,19 @@ export class SchemaASTRenderer {
   }
 
   public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { namedTypeNode, name, convertedName, kind, isNonNull, isDefined } = namedType.getData();
+    const { name, convertedName, kind, isNonNull, isDefined } = namedType.getData();
     const gen =
       this.generateNameNodeYupSchema(name, convertedName, kind) +
       fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
-      const ret = this.shouldEmitAsNotAllowEmptyString(namedTypeNode.name.value)
+      const ret = this.shouldEmitAsNotAllowEmptyString(name)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
     }
 
     // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    const typ = this.visitor.getType(namedTypeNode.name.value);
+    const typ = this.visitor.getType(name);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       const ret = `${gen}`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
