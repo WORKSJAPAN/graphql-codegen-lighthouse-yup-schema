@@ -7,6 +7,7 @@ import {
   StringValueNode,
 } from 'graphql';
 
+import { CompositeRule } from './renderable/rules/CompositeRule';
 import { Rule } from './renderable/rules/Rule';
 import { RuleFactory } from './renderable/rules/RuleFactory';
 import { RuleRenderer } from './renderable/rules/RuleRenderer';
@@ -37,8 +38,8 @@ export class DirectiveRenderer {
     directives: readonly ConstDirectiveNode[]
   ): Record<SupportedDirectiveName, Rule> {
     const ret: Record<SupportedDirectiveName, Rule> = {
-      rules: null!,
-      rulesForArray: null!,
+      rules: new CompositeRule([]),
+      rulesForArray: new CompositeRule([]),
     };
 
     for (const directive of directives) {

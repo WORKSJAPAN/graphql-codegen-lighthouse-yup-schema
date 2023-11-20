@@ -4,20 +4,20 @@ import { NameNode } from 'graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import { isNonNullType, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
-import { DirectiveRenderer } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/field/Field';
 import { FieldMetadata } from './renderable/field/FieldMetadata';
 import { Lazy } from './renderable/Lazy';
 import { ListType } from './renderable/ListType';
 import { NamedType } from './renderable/NamedType';
+import { RuleRenderer } from './renderable/rules/RuleRenderer';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
-    private readonly directiveRenderer: DirectiveRenderer,
+    private readonly ruleRenderer: RuleRenderer,
     private readonly exportTypeStrategy: ExportTypeStrategy,
     private readonly scalarRenderer: ScalarRenderer,
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
@@ -42,15 +42,14 @@ export class FieldRenderer {
     const { child, isNonNull, isDefined } = list.getData();
     const rendered = child.render(this, fieldMetadata);
 
-    return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
+    return `yup.array(${rendered})${fieldMetadata.getRuleForArray().render(this.ruleRenderer)}${
       isNonNull ? '.defined()' : '.nullable()'
     }${isDefined ? '.defined()' : ''}`;
   }
 
   public renderNamedType(namedType: NamedType, fieldMetadata: FieldMetadata): string {
     const { namedTypeNode, isNonNull, isDefined } = namedType.getData();
-    const gen =
-      this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getGeneratedCodesForDirectives().rules;
+    const gen = this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getRule().render(this.ruleRenderer);
     if (isNonNull) {
       const ret = this.shouldEmitAsNotAllowEmptyString(namedTypeNode.name.value)
         ? `${gen}.defined().required()`

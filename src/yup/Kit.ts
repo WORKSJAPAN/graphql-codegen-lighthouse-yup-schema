@@ -66,7 +66,7 @@ export class Kit {
     return new FieldRenderer(
       this.config,
       this.getVisitor(),
-      this.getDirectiveRenderer(),
+      this.getRuleRenderer(),
       this.getExportTypesStrategy(),
       this.getScalarRenderer(),
       scalarDirection
