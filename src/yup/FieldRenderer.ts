@@ -25,12 +25,12 @@ export class FieldRenderer {
 
   public renderField(field: Field) {
     const { metadata, node } = field.getData();
-    const graphQLFieldNode = metadata.getGraphQLFieldNode();
+    const { name, graphQLFieldNode } = metadata.getData();
 
     const rendered = node.render(this, metadata);
     const gen = isNonNullType(graphQLFieldNode.type) ? rendered : `${rendered}.optional()`;
 
-    return indent(`${graphQLFieldNode.name.value}: ${gen}`, 2);
+    return indent(`${name}: ${gen}`, 2);
   }
 
   public renderLazy(lazy: Lazy, fieldMetadata: FieldMetadata): string {
@@ -42,14 +42,15 @@ export class FieldRenderer {
     const { child, isNonNull, isDefined } = list.getData();
     const rendered = child.render(this, fieldMetadata);
 
-    return `yup.array(${rendered})${fieldMetadata.getRuleForArray().render(this.ruleRenderer)}${
+    return `yup.array(${rendered})${fieldMetadata.getData().ruleForArray.render(this.ruleRenderer)}${
       isNonNull ? '.defined()' : '.nullable()'
     }${isDefined ? '.defined()' : ''}`;
   }
 
   public renderNamedType(namedType: NamedType, fieldMetadata: FieldMetadata): string {
     const { namedTypeNode, isNonNull, isDefined } = namedType.getData();
-    const gen = this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getRule().render(this.ruleRenderer);
+    const gen =
+      this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getData().rule.render(this.ruleRenderer);
     if (isNonNull) {
       const ret = this.shouldEmitAsNotAllowEmptyString(namedTypeNode.name.value)
         ? `${gen}.defined().required()`

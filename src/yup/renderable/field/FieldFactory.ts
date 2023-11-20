@@ -18,6 +18,7 @@ export class FieldFactory {
     const fieldName = graphQLFieldNode.name.value;
 
     const metadata = new FieldMetadata(
+      graphQLFieldNode.name.value,
       graphQLFieldNode,
       this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesDirective ?? null),
       this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null)
