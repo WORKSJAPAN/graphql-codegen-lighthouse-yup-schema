@@ -1,8 +1,9 @@
 import { TypeNode } from 'graphql';
 
+import { AstTypeNode } from './AstTypeNode';
 import { Renderable } from './Renderable';
 
-export class NullRenderable implements Renderable {
+export class NullNode implements Renderable, AstTypeNode {
   constructor(private readonly typeNode: TypeNode) {}
 
   render() {

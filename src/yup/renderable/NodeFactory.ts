@@ -4,7 +4,7 @@ import { isListType, isNamedType, isNonNullType } from '../../graphql';
 import { FieldRenderer } from '../FieldRenderer';
 import { ListType } from './ListType';
 import { NamedType } from './NamedType';
-import { NullRenderable } from './NullRenderer';
+import { NullNode } from './NullNode';
 import { Renderable } from './Renderable';
 
 export class NodeFactory {
@@ -24,6 +24,6 @@ export class NodeFactory {
     if (isNamedType(typeNode)) {
       return new NamedType(this.fieldRenderer, typeNode, isNonNull);
     }
-    return new NullRenderable(typeNode);
+    return new NullNode(typeNode);
   }
 }
