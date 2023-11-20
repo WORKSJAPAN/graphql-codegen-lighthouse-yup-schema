@@ -57,15 +57,23 @@ export class SchemaASTRenderer {
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
-  public generateNameNodeYupSchema(node: NameNode): string {
-    const converter = this.getNameNodeConverter(node);
+  private targetKind(node: NameNode) {
+    return this.getNameNodeConverter(node)?.targetKind;
+  }
 
-    switch (converter?.targetKind) {
+  private convertedName(node: NameNode) {
+    return this.getNameNodeConverter(node)?.convertName();
+  }
+
+  public generateNameNodeYupSchema(node: NameNode): string {
+    const targetKind = this.targetKind(node);
+
+    switch (targetKind) {
       case 'InputObjectTypeDefinition':
       case 'ObjectTypeDefinition':
       case 'UnionTypeDefinition':
       case 'EnumTypeDefinition':
-        return this.exportTypeStrategy.schemaEvaluation(`${converter.convertName()}Schema`, converter?.targetKind);
+        return this.exportTypeStrategy.schemaEvaluation(`${this.convertedName(node)}Schema`, targetKind);
       default:
         return this.scalarRenderer.render(node.value, this.scalarDirection);
     }
