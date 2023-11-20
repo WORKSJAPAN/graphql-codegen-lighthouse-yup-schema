@@ -15,6 +15,8 @@ export class NodeFactory {
   ) {}
 
   public create(typeNode: TypeNode, isDefined: boolean = false): Renderable {
+    // TODO: ここで特定のディレクティブの有無によりlazyを入れる
+
     if (isNonNullType(typeNode)) {
       return this.helper(typeNode.type, true, isDefined);
     }

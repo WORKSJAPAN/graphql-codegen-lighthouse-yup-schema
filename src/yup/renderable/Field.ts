@@ -21,7 +21,6 @@ export class Field {
       this.field.directives ?? []
     );
     const gen = this.renderTopLevelField(this.field.type, generatedCodesForDirectives);
-    // TODO: ここで特定のディレクティブの有無によりlazyを入れる
     return indent(`${this.field.name.value}: ${gen}`, 2);
   }
 
