@@ -1,3 +1,4 @@
+import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 import { ListTypeNode, NamedTypeNode, NameNode, TypeNode } from 'graphql';
 
 import { isInput, isListType, isNamedType, isNonNullType } from '../../../graphql';
@@ -11,6 +12,7 @@ import { SchemaASTNullNode } from './SchemaASTNullNode';
 export class SchemaASTFactory {
   constructor(
     private readonly lazyTypes: readonly string[] = [],
+    private readonly scalarDirection: keyof NormalizedScalarsMap[string],
     private readonly visitor: Visitor
   ) {}
 
@@ -27,13 +29,14 @@ export class SchemaASTFactory {
       return new SchemaASTListNode(this.create(graphQLTypeNode.type, true), isNonNull, isDefined);
     }
     if (isNamedType(graphQLTypeNode)) {
-      const ret = new SchemaASTNamedTypeNode(
-        graphQLTypeNode.name.value,
-        this.convertedName(graphQLTypeNode.name),
-        this.targetKind(graphQLTypeNode.name),
+      const ret = new SchemaASTNamedTypeNode({
+        name: graphQLTypeNode.name.value,
+        convertedName: this.convertedName(graphQLTypeNode.name),
+        kind: this.targetKind(graphQLTypeNode.name),
+        tsType: this.visitor.getScalarType(graphQLTypeNode.name.value, this.scalarDirection),
         isNonNull,
-        isDefined
-      );
+        isDefined,
+      });
       return this.isLazy(graphQLTypeNode) ? new SchemaASTLazyNode(ret) : ret;
     }
     return new SchemaASTNullNode(graphQLTypeNode);

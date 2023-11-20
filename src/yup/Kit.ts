@@ -90,15 +90,15 @@ export class Kit {
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(this.getFieldRenderer(scalarDirection), this.getFieldFactory());
+    return new ShapeRenderer(this.getFieldRenderer(scalarDirection), this.getFieldFactory(scalarDirection));
   }
 
-  getSchemaASTFactory() {
-    return new SchemaASTFactory(this.config.lazyTypes, this.getVisitor());
+  getSchemaASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new SchemaASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
   }
 
-  getFieldFactory() {
-    return new FieldFactory(this.getSchemaASTFactory(), this.getRuleASTFactory());
+  getFieldFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new FieldFactory(this.getSchemaASTFactory(scalarDirection), this.getRuleASTFactory());
   }
 
   getImportBuilder() {

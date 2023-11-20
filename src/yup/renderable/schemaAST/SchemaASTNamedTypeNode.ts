@@ -6,20 +6,19 @@ import { SchemaASTTypeNode } from './SchemaASTTypeNode';
 
 export class SchemaASTNamedTypeNode implements SchemaASTTypeNode {
   constructor(
-    private readonly name: string,
-    private readonly convertedName: string | null,
-    private readonly kind: Kind | null,
-    private readonly isNonNull: boolean,
-    private readonly isDefined: boolean
+    private readonly data: Readonly<{
+      name: string;
+      convertedName: string | null;
+      tsType: string | null;
+      kind: Kind | null;
+      isNonNull: boolean;
+      isDefined: boolean;
+    }>
   ) {}
 
   public getData() {
     return {
-      name: this.name,
-      convertedName: this.convertedName,
-      kind: this.kind,
-      isNonNull: this.isNonNull,
-      isDefined: this.isDefined,
+      ...this.data,
     };
   }
 

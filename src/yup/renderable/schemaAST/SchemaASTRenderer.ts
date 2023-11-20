@@ -37,12 +37,12 @@ export class SchemaASTRenderer {
   }
 
   public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { name, convertedName, kind, isNonNull, isDefined } = namedType.getData();
+    const { name, convertedName, kind, tsType, isNonNull, isDefined } = namedType.getData();
     const gen =
       this.generateNameNodeYupSchema(name, convertedName, kind) +
       fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
-      const ret = this.shouldEmitAsNotAllowEmptyString(name)
+      const ret = this.shouldEmitAsNotAllowEmptyString(name, kind, tsType)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
@@ -70,15 +70,14 @@ export class SchemaASTRenderer {
     }
   }
 
-  private shouldEmitAsNotAllowEmptyString(name: string): boolean {
+  private shouldEmitAsNotAllowEmptyString(name: string, kind: Kind | null, tsType: string): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }
-    const typ = this.visitor.getType(name);
-    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
+    if (kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
       return false;
     }
-    const tsType = this.visitor.getScalarType(name, this.scalarDirection);
+
     return tsType === 'string';
   }
 }
