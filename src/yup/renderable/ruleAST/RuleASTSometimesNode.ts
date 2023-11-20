@@ -1,12 +1,12 @@
-import { CompositeRule } from './CompositeRule';
-import { Rule } from './Rule';
+import { RuleASTCompositeNode } from './RuleASTCompositeNode';
+import { RuleASTNode } from './RuleASTNode';
 import { RuleRenderer } from './RuleRenderer';
 
 // sometimes は特殊で、他の検証ルールを無視する必要があるため、コールバックで他の検証ルールを渡す形にする。
-export class SometimesRule implements Rule {
+export class RuleASTSometimesNode implements RuleASTNode {
   public constructor(
     private readonly fieldName: string, // 消したい
-    private readonly continuation: CompositeRule
+    private readonly continuation: RuleASTCompositeNode
   ) {}
 
   public getData() {

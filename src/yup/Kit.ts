@@ -11,7 +11,7 @@ import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { FieldFactory } from './renderable/field/FieldFactory';
-import { RuleFactory } from './renderable/ruleAST/RuleFactory';
+import { RuleASTFactory } from './renderable/ruleAST/RuleASTFactory';
 import { RuleRenderer } from './renderable/ruleAST/RuleRenderer';
 import { SchemaASTFactory } from './renderable/schemaAST/SchemaASTFactory';
 import { ScalarRenderer } from './ScalarRenderer';
@@ -76,8 +76,8 @@ export class Kit {
     return new ScalarRenderer(this.config.scalarSchemas, this.getVisitor());
   }
 
-  getRuleFactory() {
-    return new RuleFactory(this.config.rules, this.config.ignoreRules);
+  getRuleASTFactory() {
+    return new RuleASTFactory(this.config.rules, this.config.ignoreRules);
   }
 
   getRuleRenderer() {
@@ -88,12 +88,12 @@ export class Kit {
     return new ShapeRenderer(this.getFieldRenderer(scalarDirection), this.getFieldFactory());
   }
 
-  getNodeFactory() {
+  getSchemaASTFactory() {
     return new SchemaASTFactory(this.config.lazyTypes);
   }
 
   getFieldFactory() {
-    return new FieldFactory(this.getNodeFactory(), this.getRuleFactory());
+    return new FieldFactory(this.getSchemaASTFactory(), this.getRuleASTFactory());
   }
 
   getImportBuilder() {

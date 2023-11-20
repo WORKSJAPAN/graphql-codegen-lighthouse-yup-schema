@@ -1,7 +1,7 @@
-import { Rule } from './Rule';
+import { RuleASTNode } from './RuleASTNode';
 import { RuleRenderer } from './RuleRenderer';
 
-export class SingleRule implements Rule {
+export class RuleASTSingleNode implements RuleASTNode {
   public constructor(
     private readonly mappedName: string,
     private readonly rawArgs: readonly string[]

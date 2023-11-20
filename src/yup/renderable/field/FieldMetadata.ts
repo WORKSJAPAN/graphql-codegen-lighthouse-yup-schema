@@ -1,11 +1,11 @@
-import { Rule } from '../ruleAST/Rule';
+import { RuleASTNode } from '../ruleAST/RuleASTNode';
 
 export class FieldMetadata {
   constructor(
     private readonly name: string,
     private readonly isOptional: boolean,
-    private readonly rule: Rule,
-    private readonly ruleForArray: Rule
+    private readonly rule: RuleASTNode,
+    private readonly ruleForArray: RuleASTNode
   ) {}
 
   public getData() {

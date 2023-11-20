@@ -1,11 +1,11 @@
 import { ConstDirectiveNode, ConstListValueNode, ConstValueNode, Kind, StringValueNode } from 'graphql';
 
 import { Rules } from '../../../config';
-import { CompositeRule } from './CompositeRule';
-import { SingleRule } from './SingleRule';
-import { SometimesRule } from './SometimesRule';
+import { RuleASTCompositeNode } from './RuleASTCompositeNode';
+import { RuleASTSingleNode } from './RuleASTSingleNode';
+import { RuleASTSometimesNode } from './RuleASTSometimesNode';
 
-export class RuleFactory {
+export class RuleASTFactory {
   public constructor(
     private rules: Rules = {},
     private ignoreRules: readonly string[] = [],
@@ -17,7 +17,7 @@ export class RuleFactory {
   }
 
   public createNullObject() {
-    return new CompositeRule([]);
+    return new RuleASTCompositeNode([]);
   }
 
   public createFromDirective(fieldName: string, directive: ConstDirectiveNode) {
@@ -34,7 +34,7 @@ export class RuleFactory {
     return this.helper(fieldName, ruleStrings);
   }
 
-  private helper(fieldName: string, ruleStrings: readonly string[]): CompositeRule | SometimesRule {
+  private helper(fieldName: string, ruleStrings: readonly string[]): RuleASTCompositeNode | RuleASTSometimesNode {
     const parsed = ruleStrings.flatMap(ruleString => {
       const validationRule = parse(ruleString);
 
@@ -53,9 +53,11 @@ export class RuleFactory {
     const sometimesIfExists = parsed.filter(isSometimes);
     const others = parsed.filter(isNotSometimes);
 
-    const compositeRule = new CompositeRule(others.map(({ name, rawArgs }) => new SingleRule(name, rawArgs)));
+    const compositeRule = new RuleASTCompositeNode(
+      others.map(({ name, rawArgs }) => new RuleASTSingleNode(name, rawArgs))
+    );
 
-    return sometimesIfExists.length === 0 ? compositeRule : new SometimesRule(fieldName, compositeRule);
+    return sometimesIfExists.length === 0 ? compositeRule : new RuleASTSometimesNode(fieldName, compositeRule);
   }
 
   private mapMethodName(ruleName: string): string {

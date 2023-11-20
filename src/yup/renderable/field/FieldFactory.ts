@@ -1,15 +1,15 @@
 import { ConstDirectiveNode, FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
 import { isNonNullType } from '../../../graphql';
-import { RuleFactory } from '../ruleAST/RuleFactory';
+import { RuleASTFactory } from '../ruleAST/RuleASTFactory';
 import { SchemaASTFactory } from '../schemaAST/SchemaASTFactory';
 import { Field } from './Field';
 import { FieldMetadata } from './FieldMetadata';
 
 export class FieldFactory {
   public constructor(
-    private readonly nodeFactory: SchemaASTFactory,
-    private readonly ruleFactory: RuleFactory
+    private readonly schemaASTFactory: SchemaASTFactory,
+    private readonly ruleASTFactory: RuleASTFactory
   ) {}
 
   public create(graphQLFieldNode: InputValueDefinitionNode | FieldDefinitionNode): Field {
@@ -21,11 +21,11 @@ export class FieldFactory {
     const metadata = new FieldMetadata(
       graphQLFieldNode.name.value,
       !isNonNullType(graphQLFieldNode.type),
-      this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesDirective ?? null),
-      this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null)
+      this.ruleASTFactory.createFromDirectiveOrNull(fieldName, rulesDirective ?? null),
+      this.ruleASTFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null)
     );
 
-    return new Field(metadata, this.nodeFactory.create(graphQLFieldNode.type));
+    return new Field(metadata, this.schemaASTFactory.create(graphQLFieldNode.type));
   }
 }
 
