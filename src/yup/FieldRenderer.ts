@@ -1,8 +1,8 @@
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { NamedTypeNode, NameNode } from 'graphql';
+import { NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { isInput, isSpecifiedScalarName } from '../graphql';
+import { isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { ScalarRenderer } from './ScalarRenderer';
