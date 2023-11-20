@@ -1,5 +1,4 @@
 import { Rules } from '../../../config';
-import { LighthouseValidationRule, parse } from '../../../LaravelValidationRule';
 import { CompositeRule } from './CompositeRule';
 import { SingleRule } from './SingleRule';
 import { SometimesRule } from './SometimesRule';
@@ -23,8 +22,8 @@ export class RuleFactory {
         name: this.mapMethodName(validationRule.name),
       };
     });
-    const isSometimes = ({ name }: LighthouseValidationRule) => name === 'sometimes';
-    const isNotSometimes = ({ name }: LighthouseValidationRule) => name !== 'sometimes';
+    const isSometimes = ({ name }: LaravelValidationRule) => name === 'sometimes';
+    const isNotSometimes = ({ name }: LaravelValidationRule) => name !== 'sometimes';
 
     const sometimesIfExists = parsed.filter(isSometimes);
     const others = parsed.filter(isNotSometimes);
@@ -45,3 +44,18 @@ export class RuleFactory {
     return ruleMapping;
   }
 }
+
+export type LaravelValidationRule = {
+  name: string;
+  rawArgs: string[];
+};
+
+export const parse = (ruleString: string): LaravelValidationRule => {
+  const [name, rest] = ruleString.split(':');
+  const rawArgs = rest ? rest.split(',') : [];
+
+  return {
+    name,
+    rawArgs,
+  };
+};
