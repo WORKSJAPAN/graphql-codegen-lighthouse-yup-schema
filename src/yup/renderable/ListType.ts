@@ -15,5 +15,6 @@ export class ListType implements Renderable, AstTypeNode {
     return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
       this.isNonNull ? '.defined()' : '.nullable()'
     }${this.isDefined ? '.defined()' : ''}`;
+    // TODO: defined() がいっぱいついてしまうの直す
   }
 }
