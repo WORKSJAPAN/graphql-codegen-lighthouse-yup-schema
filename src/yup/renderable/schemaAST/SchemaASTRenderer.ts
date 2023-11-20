@@ -37,12 +37,12 @@ export class SchemaASTRenderer {
   }
 
   public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { name, convertedName, kind, tsType, isNonNull, isDefined } = namedType.getData();
+    const { graphQLTypeName, convertedName, kind, tsTypeName, isNonNull, isDefined } = namedType.getData();
     const gen =
-      this.generateNameNodeYupSchema(name, convertedName, kind) +
+      this.generateNameNodeYupSchema(graphQLTypeName, convertedName, kind) +
       fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
-      const ret = this.shouldEmitAsNotAllowEmptyString(name, kind, tsType)
+      const ret = this.shouldEmitAsNotAllowEmptyString(graphQLTypeName, kind, tsTypeName)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;

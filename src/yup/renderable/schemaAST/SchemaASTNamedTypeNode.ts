@@ -7,9 +7,9 @@ import { SchemaASTTypeNode } from './SchemaASTTypeNode';
 export class SchemaASTNamedTypeNode implements SchemaASTTypeNode {
   constructor(
     private readonly data: Readonly<{
-      name: string;
-      convertedName: string | null;
-      tsType: string | null;
+      graphQLTypeName: string;
+      tsTypeName: string | null;
+      convertedName: string;
       kind: Kind | null;
       isNonNull: boolean;
       isDefined: boolean;

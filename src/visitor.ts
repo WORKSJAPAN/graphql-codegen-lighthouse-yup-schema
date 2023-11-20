@@ -13,7 +13,11 @@ export class Visitor extends TsVisitor {
   }
 
   public getKind(graphQLTypeName: string) {
-    return this.schema.getType(graphQLTypeName)?.astNode?.kind ?? null;
+    const foundType = this.schema.getType(graphQLTypeName);
+    if (!foundType) {
+      throw new Error(`type ${graphQLTypeName} not found in schema`);
+    }
+    return foundType.astNode?.kind ?? null;
   }
 
   public getTypeScriptScalarType(
