@@ -1,6 +1,6 @@
 import { FieldRenderer } from '../FieldRenderer';
 import { AstTypeNode } from './AstTypeNode';
-import { FieldMetadata } from './FieldMetadata';
+import { FieldMetadata } from './field/FieldMetadata';
 import { Lazy } from './Lazy';
 
 export class ListType implements AstTypeNode {

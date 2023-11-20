@@ -1,4 +1,4 @@
-import { GeneratedCodesForDirectives } from '../DirectiveRenderer';
+import { GeneratedCodesForDirectives } from '../../DirectiveRenderer';
 
 export class FieldMetadata {
   constructor(readonly generatedCodesForDirectives: GeneratedCodesForDirectives) {}

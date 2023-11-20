@@ -2,7 +2,7 @@ import { NamedTypeNode } from 'graphql';
 
 import { FieldRenderer } from '../FieldRenderer';
 import { AstTypeNode } from './AstTypeNode';
-import { FieldMetadata } from './FieldMetadata';
+import { FieldMetadata } from './field/FieldMetadata';
 import { Renderable } from './Renderable';
 
 export class NamedType implements Renderable, AstTypeNode {

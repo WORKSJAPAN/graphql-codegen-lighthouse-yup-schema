@@ -1,7 +1,6 @@
 import { ListTypeNode, NamedTypeNode, TypeNode } from 'graphql';
 
 import { isInput, isListType, isNamedType, isNonNullType } from '../../graphql';
-import { FieldRenderer } from '../FieldRenderer';
 import { Lazy } from './Lazy';
 import { ListType } from './ListType';
 import { NamedType } from './NamedType';
@@ -9,10 +8,7 @@ import { NullNode } from './NullNode';
 import { Renderable } from './Renderable';
 
 export class NodeFactory {
-  constructor(
-    private readonly fieldRenderer: FieldRenderer,
-    private readonly lazyTypes: readonly string[] = []
-  ) {}
+  constructor(private readonly lazyTypes: readonly string[] = []) {}
 
   public create(typeNode: TypeNode, isDefined: boolean = false): Renderable {
     // TODO: ここで特定のディレクティブの有無によりlazyを入れる

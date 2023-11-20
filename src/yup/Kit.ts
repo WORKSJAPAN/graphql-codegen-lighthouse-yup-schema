@@ -11,6 +11,7 @@ import { FieldRenderer } from './FieldRenderer';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
+import { FieldFactory } from './renderable/field/FieldFactory';
 import { NodeFactory } from './renderable/NodeFactory';
 import { RuleFactory } from './renderable/rules/RuleFactory';
 import { RuleRenderer } from './renderable/rules/RuleRenderer';
@@ -89,11 +90,15 @@ export class Kit {
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(this.getFieldRenderer(scalarDirection), this.getNodeFactory(scalarDirection));
+    return new ShapeRenderer(this.getFieldRenderer(scalarDirection), this.getFieldFactory());
   }
 
-  getNodeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new NodeFactory(this.getFieldRenderer(scalarDirection), this.config.lazyTypes);
+  getNodeFactory() {
+    return new NodeFactory(this.config.lazyTypes);
+  }
+
+  getFieldFactory() {
+    return new FieldFactory(this.getNodeFactory(), this.getRuleFactory());
   }
 
   getImportBuilder() {

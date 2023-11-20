@@ -1,20 +1,18 @@
 import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
 import { FieldRenderer } from './FieldRenderer';
-import { Field } from './renderable/Field';
-import { NodeFactory } from './renderable/NodeFactory';
+import { FieldFactory } from './renderable/field/FieldFactory';
 
 export class ShapeRenderer {
   constructor(
     private readonly fieldRenderer: FieldRenderer,
-    private readonly nodeFactory: NodeFactory
+    private readonly fieldFactory: FieldFactory
   ) {}
 
   public render(fields: readonly (InputValueDefinitionNode | FieldDefinitionNode)[]) {
     return fields
       ?.map(field => {
-        const node = this.nodeFactory.create(field.type);
-        const astField = new Field(field, node);
+        const astField = this.fieldFactory.create(field);
         return astField.render(this.fieldRenderer);
       })
       .join(',\n');
