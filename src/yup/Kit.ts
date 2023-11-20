@@ -94,7 +94,7 @@ export class Kit {
   }
 
   getSchemaASTFactory() {
-    return new SchemaASTFactory(this.config.lazyTypes);
+    return new SchemaASTFactory(this.config.lazyTypes, this.getVisitor());
   }
 
   getFieldFactory() {

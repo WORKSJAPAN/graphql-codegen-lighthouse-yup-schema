@@ -1,6 +1,7 @@
-import { ListTypeNode, NamedTypeNode, TypeNode } from 'graphql';
+import { ListTypeNode, NamedTypeNode, NameNode, TypeNode } from 'graphql';
 
 import { isInput, isListType, isNamedType, isNonNullType } from '../../../graphql';
+import { Visitor } from '../../../visitor';
 import { SchemaASTLazyNode } from './SchemaASTLazyNode';
 import { SchemaASTListNode } from './SchemaASTListNode';
 import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
@@ -8,7 +9,10 @@ import { SchemaASTNode } from './SchemaASTNode';
 import { SchemaASTNullNode } from './SchemaASTNullNode';
 
 export class SchemaASTFactory {
-  constructor(private readonly lazyTypes: readonly string[] = []) {}
+  constructor(
+    private readonly lazyTypes: readonly string[] = [],
+    private readonly visitor: Visitor
+  ) {}
 
   public create(graphQLTypeNode: TypeNode, isDefined: boolean = false): SchemaASTNode {
     if (isNonNullType(graphQLTypeNode)) {
@@ -23,7 +27,14 @@ export class SchemaASTFactory {
       return new SchemaASTListNode(this.create(graphQLTypeNode.type, true), isNonNull, isDefined);
     }
     if (isNamedType(graphQLTypeNode)) {
-      const ret = new SchemaASTNamedTypeNode(graphQLTypeNode, isNonNull, isDefined);
+      const ret = new SchemaASTNamedTypeNode(
+        graphQLTypeNode,
+        graphQLTypeNode.name.value,
+        this.convertedName(graphQLTypeNode.name),
+        this.targetKind(graphQLTypeNode.name),
+        isNonNull,
+        isDefined
+      );
       return this.isLazy(graphQLTypeNode) ? new SchemaASTLazyNode(ret) : ret;
     }
     return new SchemaASTNullNode(graphQLTypeNode);
@@ -31,5 +42,25 @@ export class SchemaASTFactory {
 
   private isLazy(graphQLTypeNode: NamedTypeNode): boolean {
     return isInput(graphQLTypeNode.name.value) && this.lazyTypes.includes(graphQLTypeNode.name.value);
+  }
+
+  private targetKind(graphQLNameNode: NameNode) {
+    return this.getNameNodeConverter(graphQLNameNode)?.targetKind ?? null;
+  }
+
+  private convertedName(graphQLNameNode: NameNode) {
+    return this.getNameNodeConverter(graphQLNameNode)?.convertName() ?? null;
+  }
+
+  private getNameNodeConverter(node: NameNode) {
+    const typ = this.visitor.getType(node.value);
+    const astNode = typ?.astNode;
+    if (astNode === undefined || astNode === null) {
+      return undefined;
+    }
+    return {
+      targetKind: astNode.kind,
+      convertName: () => this.visitor.convertName(astNode.name.value),
+    };
   }
 }

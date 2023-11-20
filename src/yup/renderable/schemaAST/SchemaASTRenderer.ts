@@ -1,5 +1,5 @@
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { NameNode } from 'graphql';
+import { Kind, NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../../../config';
 import { isSpecifiedScalarName } from '../../../graphql';
@@ -37,9 +37,10 @@ export class SchemaASTRenderer {
   }
 
   public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { namedTypeNode, isNonNull, isDefined } = namedType.getData();
+    const { namedTypeNode, name, convertedName, kind, isNonNull, isDefined } = namedType.getData();
     const gen =
-      this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
+      this.generateNameNodeYupSchema(name, convertedName, kind) +
+      fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
       const ret = this.shouldEmitAsNotAllowEmptyString(namedTypeNode.name.value)
         ? `${gen}.defined().required()`
@@ -65,17 +66,15 @@ export class SchemaASTRenderer {
     return this.getNameNodeConverter(node)?.convertName();
   }
 
-  public generateNameNodeYupSchema(node: NameNode): string {
-    const targetKind = this.targetKind(node);
-
+  private generateNameNodeYupSchema(name: string, convertedName: string | null, targetKind: Kind | null): string {
     switch (targetKind) {
       case 'InputObjectTypeDefinition':
       case 'ObjectTypeDefinition':
       case 'UnionTypeDefinition':
       case 'EnumTypeDefinition':
-        return this.exportTypeStrategy.schemaEvaluation(`${this.convertedName(node)}Schema`, targetKind);
+        return this.exportTypeStrategy.schemaEvaluation(`${convertedName}Schema`, targetKind);
       default:
-        return this.scalarRenderer.render(node.value, this.scalarDirection);
+        return this.scalarRenderer.render(name, this.scalarDirection);
     }
   }
 
