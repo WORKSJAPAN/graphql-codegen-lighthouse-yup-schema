@@ -1,5 +1,5 @@
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { ListTypeNode, NamedTypeNode, NameNode, TypeNode } from 'graphql';
+import { ListTypeNode, NamedTypeNode, TypeNode } from 'graphql';
 
 import { isInput, isListType, isNamedType, isNonNullType } from '../../../graphql';
 import { Visitor } from '../../../visitor';
@@ -29,20 +29,21 @@ export class SchemaASTFactory {
       return new SchemaASTListNode(this.create(graphQLTypeNode.type, true), isNonNull, isDefined);
     }
     if (isNamedType(graphQLTypeNode)) {
+      const name = graphQLTypeNode.name.value;
       const ret = new SchemaASTNamedTypeNode({
-        name: graphQLTypeNode.name.value,
-        convertedName: this.visitor.convertName(graphQLTypeNode.name.value),
-        kind: this.visitor.getKind(graphQLTypeNode.name.value),
-        tsType: this.visitor.getTypeScriptScalarType(graphQLTypeNode.name.value, this.scalarDirection),
+        name,
+        convertedName: this.visitor.convertName(name),
+        kind: this.visitor.getKind(name),
+        tsType: this.visitor.getTypeScriptScalarType(name, this.scalarDirection),
         isNonNull,
         isDefined,
       });
-      return this.isLazy(graphQLTypeNode) ? new SchemaASTLazyNode(ret) : ret;
+      return this.isLazy(name) ? new SchemaASTLazyNode(ret) : ret;
     }
     return new SchemaASTNullNode(graphQLTypeNode);
   }
 
-  private isLazy(graphQLTypeNode: NamedTypeNode): boolean {
-    return isInput(graphQLTypeNode.name.value) && this.lazyTypes.includes(graphQLTypeNode.name.value);
+  private isLazy(graphQLTypeName: string): boolean {
+    return isInput(graphQLTypeName) && this.lazyTypes.includes(graphQLTypeName);
   }
 }
