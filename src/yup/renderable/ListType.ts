@@ -11,10 +11,10 @@ export class ListType implements Renderable, AstTypeNode {
 
   public render(fieldMetadata: FieldMetadata) {
     const rendered = this.child.render(fieldMetadata);
-    const isChildLazy = this.child.shouldBeLazy(fieldMetadata);
-
     // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
     const arrayContent = `${rendered}.defined()`;
+
+    const isChildLazy = this.child.shouldBeLazy(fieldMetadata);
     const maybeLazy = isChildLazy ? renderLazy(arrayContent) : arrayContent;
 
     return `yup.array(${maybeLazy})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
