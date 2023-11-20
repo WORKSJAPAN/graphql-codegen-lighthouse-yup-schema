@@ -1,11 +1,11 @@
 import { FieldRenderer } from '../../FieldRenderer';
 import { FieldMetadata } from '../field/FieldMetadata';
-import { ASTLazyNode } from './ASTLazyNode';
-import { AstTypeNode } from './AstTypeNode';
+import { SchemaASTLazyNode } from './SchemaASTLazyNode';
+import { SchemaASTTypeNode } from './SchemaASTTypeNode';
 
-export class ASTListNode implements AstTypeNode {
+export class SchemaASTListNode implements SchemaASTTypeNode {
   constructor(
-    private readonly child: AstTypeNode | ASTLazyNode,
+    private readonly child: SchemaASTTypeNode | SchemaASTLazyNode,
     private readonly isNonNull: boolean,
     private readonly isDefined: boolean
   ) {}

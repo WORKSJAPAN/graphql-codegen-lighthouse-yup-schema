@@ -1,4 +1,4 @@
-import { Rule } from '../rules/Rule';
+import { Rule } from '../ruleAST/Rule';
 
 export class FieldMetadata {
   constructor(

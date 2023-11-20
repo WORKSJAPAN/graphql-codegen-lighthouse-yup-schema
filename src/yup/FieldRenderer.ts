@@ -7,10 +7,10 @@ import { Visitor } from '../visitor';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/field/Field';
 import { FieldMetadata } from './renderable/field/FieldMetadata';
-import { RuleRenderer } from './renderable/rules/RuleRenderer';
-import { ASTLazyNode } from './renderable/schemaAST/ASTLazyNode';
-import { ASTListNode } from './renderable/schemaAST/ASTListNode';
-import { ASTNamedTypeNode } from './renderable/schemaAST/ASTNamedTypeNode';
+import { RuleRenderer } from './renderable/ruleAST/RuleRenderer';
+import { SchemaASTLazyNode } from './renderable/schemaAST/SchemaASTLazyNode';
+import { SchemaASTListNode } from './renderable/schemaAST/SchemaASTListNode';
+import { SchemaASTNamedTypeNode } from './renderable/schemaAST/SchemaASTNamedTypeNode';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
@@ -24,20 +24,20 @@ export class FieldRenderer {
   ) {}
 
   public renderField(field: Field) {
-    const { metadata, node } = field.getData();
-    const renderedNode = node.render(this, metadata);
+    const { metadata, schema } = field.getData();
+    const renderedNode = schema.render(this, metadata);
 
     const { name } = metadata.getData();
     const gen = metadata.getData().isOptional ? `${renderedNode}.optional()` : renderedNode;
     return indent(`${name}: ${gen}`, 2);
   }
 
-  public renderLazy(lazy: ASTLazyNode, fieldMetadata: FieldMetadata): string {
+  public renderLazy(lazy: SchemaASTLazyNode, fieldMetadata: FieldMetadata): string {
     const { child } = lazy.getData();
     return `yup.lazy(() => ${child.render(this, fieldMetadata)})`;
   }
 
-  public renderList(list: ASTListNode, fieldMetadata: FieldMetadata): string {
+  public renderList(list: SchemaASTListNode, fieldMetadata: FieldMetadata): string {
     const { child, isNonNull, isDefined } = list.getData();
     const rendered = child.render(this, fieldMetadata);
 
@@ -46,7 +46,7 @@ export class FieldRenderer {
     }${isDefined ? '.defined()' : ''}`;
   }
 
-  public renderNamedType(namedType: ASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
+  public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
     const { namedTypeNode, isNonNull, isDefined } = namedType.getData();
     const gen =
       this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getData().rule.render(this.ruleRenderer);

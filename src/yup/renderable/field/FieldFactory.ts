@@ -1,14 +1,14 @@
 import { ConstDirectiveNode, FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
 import { isNonNullType } from '../../../graphql';
-import { RuleFactory } from '../rules/RuleFactory';
-import { ASTNodeFactory } from '../schemaAST/ASTNodeFactory';
+import { RuleFactory } from '../ruleAST/RuleFactory';
+import { SchemaASTFactory } from '../schemaAST/SchemaASTFactory';
 import { Field } from './Field';
 import { FieldMetadata } from './FieldMetadata';
 
 export class FieldFactory {
   public constructor(
-    private readonly nodeFactory: ASTNodeFactory,
+    private readonly nodeFactory: SchemaASTFactory,
     private readonly ruleFactory: RuleFactory
   ) {}
 

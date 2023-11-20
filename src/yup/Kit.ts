@@ -11,9 +11,9 @@ import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { FieldFactory } from './renderable/field/FieldFactory';
-import { RuleFactory } from './renderable/rules/RuleFactory';
-import { RuleRenderer } from './renderable/rules/RuleRenderer';
-import { ASTNodeFactory } from './renderable/schemaAST/ASTNodeFactory';
+import { RuleFactory } from './renderable/ruleAST/RuleFactory';
+import { RuleRenderer } from './renderable/ruleAST/RuleRenderer';
+import { SchemaASTFactory } from './renderable/schemaAST/SchemaASTFactory';
 import { ScalarRenderer } from './ScalarRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
@@ -89,7 +89,7 @@ export class Kit {
   }
 
   getNodeFactory() {
-    return new ASTNodeFactory(this.config.lazyTypes);
+    return new SchemaASTFactory(this.config.lazyTypes);
   }
 
   getFieldFactory() {
