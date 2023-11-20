@@ -12,7 +12,7 @@ export class ScalarRenderer {
     if (this.scalarSchemas[scalarName]) {
       return `${this.scalarSchemas[scalarName]}`;
     }
-    const tsType = this.visitor.getScalarType(scalarName, scalarDirection);
+    const tsType = this.visitor.getTypeScriptScalarType(scalarName, scalarDirection);
     switch (tsType) {
       case 'string':
         return `yup.string()`;

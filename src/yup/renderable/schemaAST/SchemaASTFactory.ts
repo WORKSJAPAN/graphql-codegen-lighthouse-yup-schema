@@ -33,7 +33,7 @@ export class SchemaASTFactory {
         name: graphQLTypeNode.name.value,
         convertedName: this.convertedName(graphQLTypeNode.name),
         kind: this.targetKind(graphQLTypeNode.name),
-        tsType: this.visitor.getScalarType(graphQLTypeNode.name.value, this.scalarDirection),
+        tsType: this.visitor.getTypeScriptScalarType(graphQLTypeNode.name.value, this.scalarDirection),
         isNonNull,
         isDefined,
       });
@@ -55,7 +55,7 @@ export class SchemaASTFactory {
   }
 
   private getNameNodeConverter(node: NameNode) {
-    const typ = this.visitor.getType(node.value);
+    const typ = this.visitor.getGraphQLNamedType(node.value);
     const astNode = typ?.astNode;
     if (astNode === undefined || astNode === null) {
       return undefined;

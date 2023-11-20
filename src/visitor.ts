@@ -12,11 +12,14 @@ export class Visitor extends TsVisitor {
     super(schema, pluginConfig);
   }
 
-  public getType(graphQLTypeName: string) {
+  public getGraphQLNamedType(graphQLTypeName: string) {
     return this.schema.getType(graphQLTypeName);
   }
 
-  public getScalarType(graphQLTypeName: string, scalarDirection: keyof NormalizedScalarsMap[string]): string | null {
+  public getTypeScriptScalarType(
+    graphQLTypeName: string,
+    scalarDirection: keyof NormalizedScalarsMap[string]
+  ): string | null {
     return this.scalars[graphQLTypeName]?.[scalarDirection] ?? null;
   }
 }

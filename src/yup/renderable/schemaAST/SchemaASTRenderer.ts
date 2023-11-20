@@ -49,7 +49,7 @@ export class SchemaASTRenderer {
     }
 
     // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    const typ = this.visitor.getType(name);
+    const typ = this.visitor.getGraphQLNamedType(name);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       const ret = `${gen}`;
       return isDefined ? `${ret}.defined()` : `${ret}`;

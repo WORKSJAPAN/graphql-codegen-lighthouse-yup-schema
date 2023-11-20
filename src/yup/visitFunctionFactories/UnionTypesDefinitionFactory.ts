@@ -26,7 +26,7 @@ export class UnionTypesDefinitionFactory implements VisitFunctionFactory<UnionTy
       const unionElements = node.types
         ?.map(t => {
           const element = this.visitor.convertName(t.name.value);
-          const typ = this.visitor.getType(t.name.value);
+          const typ = this.visitor.getGraphQLNamedType(t.name.value);
 
           return this.exportTypeStrategy.schemaEvaluation(`${element}Schema`, typ?.astNode?.kind);
         })
