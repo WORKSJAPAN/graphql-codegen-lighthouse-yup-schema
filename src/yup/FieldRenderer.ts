@@ -30,10 +30,6 @@ export class FieldRenderer {
     }
   }
 
-  public isLazy(type: NamedTypeNode): boolean {
-    return isInput(type.name.value) && !!this.config.lazyTypes?.includes(type.name.value);
-  }
-
   private getNameNodeConverter(node: NameNode) {
     const typ = this.visitor.getType(node.value);
     const astNode = typ?.astNode;

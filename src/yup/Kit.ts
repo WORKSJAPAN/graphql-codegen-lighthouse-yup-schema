@@ -86,7 +86,7 @@ export class Kit {
   }
 
   getNodeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new NodeFactory(this.getFieldRenderer(scalarDirection));
+    return new NodeFactory(this.getFieldRenderer(scalarDirection), this.config.lazyTypes);
   }
 
   getImportBuilder() {
