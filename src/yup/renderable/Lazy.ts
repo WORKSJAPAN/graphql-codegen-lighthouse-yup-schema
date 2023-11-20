@@ -6,8 +6,10 @@ import { Renderable } from './Renderable';
 export class Lazy implements Renderable {
   constructor(private readonly child: AstTypeNode) {}
 
-  public getChild() {
-    return this.child;
+  public getData() {
+    return {
+      child: this.child,
+    };
   }
 
   public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {

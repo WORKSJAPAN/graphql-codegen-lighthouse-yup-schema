@@ -8,6 +8,7 @@ import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { FieldMetadata } from './renderable/FieldMetadata';
 import { Lazy } from './renderable/Lazy';
 import { ListType } from './renderable/ListType';
+import { NamedType } from './renderable/NamedType';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
@@ -20,15 +21,38 @@ export class FieldRenderer {
   ) {}
 
   public renderLazy(lazy: Lazy, fieldMetadata: FieldMetadata): string {
-    return `yup.lazy(() => ${lazy.getChild().render(this, fieldMetadata)})`;
+    const { child } = lazy.getData();
+    return `yup.lazy(() => ${child.render(this, fieldMetadata)})`;
   }
 
   public renderList(list: ListType, fieldMetadata: FieldMetadata): string {
-    const rendered = list.getChild().render(this, fieldMetadata);
+    const { child, isNonNull, isDefined } = list.getData();
+    const rendered = child.render(this, fieldMetadata);
 
     return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
-      list.isNonNull() ? '.defined()' : '.nullable()'
-    }${list.isDefined() ? '.defined()' : ''}`;
+      isNonNull ? '.defined()' : '.nullable()'
+    }${isDefined ? '.defined()' : ''}`;
+  }
+
+  public renderNamedType(namedType: NamedType, fieldMetadata: FieldMetadata): string {
+    const { namedTypeNode, isNonNull, isDefined } = namedType.getData();
+    const gen =
+      this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getGeneratedCodesForDirectives().rules;
+    if (isNonNull) {
+      const ret = this.shouldEmitAsNotAllowEmptyString(namedTypeNode.name.value)
+        ? `${gen}.defined().required()`
+        : `${gen}.defined().nonNullable()`;
+      return isDefined ? `${ret}.defined()` : `${ret}`;
+    }
+
+    // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
+    const typ = this.getVisitor().getType(namedTypeNode.name.value);
+    if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
+      const ret = `${gen}`;
+      return isDefined ? `${ret}.defined()` : `${ret}`;
+    }
+    const ret = `${gen}.nullable()`;
+    return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
   public generateNameNodeYupSchema(node: NameNode): string {

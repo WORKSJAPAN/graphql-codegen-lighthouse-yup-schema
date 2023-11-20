@@ -6,20 +6,16 @@ import { Renderable } from './Renderable';
 export class ListType implements Renderable, AstTypeNode {
   constructor(
     private readonly child: Renderable,
-    private readonly _isNonNull: boolean,
-    private readonly _isDefined: boolean
+    private readonly isNonNull: boolean,
+    private readonly isDefined: boolean
   ) {}
 
-  public getChild() {
-    return this.child;
-  }
-
-  public isNonNull() {
-    return this._isNonNull;
-  }
-
-  public isDefined() {
-    return this._isDefined;
+  public getData() {
+    return {
+      child: this.child,
+      isNonNull: this.isNonNull,
+      isDefined: this.isDefined,
+    };
   }
 
   public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
