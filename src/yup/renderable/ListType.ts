@@ -1,11 +1,11 @@
 import { FieldRenderer } from '../FieldRenderer';
 import { AstTypeNode } from './AstTypeNode';
 import { FieldMetadata } from './FieldMetadata';
-import { Renderable } from './Renderable';
+import { Lazy } from './Lazy';
 
-export class ListType implements Renderable, AstTypeNode {
+export class ListType implements AstTypeNode {
   constructor(
-    private readonly child: Renderable,
+    private readonly child: AstTypeNode | Lazy,
     private readonly isNonNull: boolean,
     private readonly isDefined: boolean
   ) {}
