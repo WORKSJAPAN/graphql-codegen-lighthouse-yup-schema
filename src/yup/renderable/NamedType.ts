@@ -29,6 +29,6 @@ export class NamedType implements Renderable, AstTypeNode {
   }
 
   public shouldBeLazy(): boolean {
-    return this.fieldRenderer.isLazy(this.namedTypeNode);
+    return false;
   }
 }

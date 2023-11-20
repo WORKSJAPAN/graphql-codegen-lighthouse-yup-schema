@@ -2,6 +2,7 @@ import { ListTypeNode, NamedTypeNode, TypeNode } from 'graphql';
 
 import { isListType, isNamedType, isNonNullType } from '../../graphql';
 import { FieldRenderer } from '../FieldRenderer';
+import { Lazy } from './Lazy';
 import { ListType } from './ListType';
 import { NamedType } from './NamedType';
 import { NullNode } from './NullNode';
@@ -22,6 +23,9 @@ export class NodeFactory {
       return new ListType(this.create(typeNode.type), isNonNull);
     }
     if (isNamedType(typeNode)) {
+      if (this.fieldRenderer.isLazy(typeNode)) {
+        return new Lazy(new NamedType(this.fieldRenderer, typeNode, isNonNull));
+      }
       return new NamedType(this.fieldRenderer, typeNode, isNonNull);
     }
     return new NullNode(typeNode);
