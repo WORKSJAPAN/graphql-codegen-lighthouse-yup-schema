@@ -27,7 +27,7 @@ export class Field {
   private renderTopLevelField(typeNode: TypeNode, generatedCodesForDirectives: GeneratedCodesForDirectives): string {
     const fieldMetadata = new FieldMetadata(generatedCodesForDirectives);
 
-    const rendered = this.node.render(fieldMetadata);
+    const rendered = this.node.render(this.fieldRenderer, fieldMetadata);
     return isNonNullType(typeNode) ? rendered : `${rendered}.optional()`;
   }
 }

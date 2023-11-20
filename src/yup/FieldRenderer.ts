@@ -16,6 +16,10 @@ export class FieldRenderer {
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
 
+  public renderLazy(innerSchema: string): string {
+    return `yup.lazy(() => ${innerSchema})`;
+  }
+
   public generateNameNodeYupSchema(node: NameNode): string {
     const converter = this.getNameNodeConverter(node);
 

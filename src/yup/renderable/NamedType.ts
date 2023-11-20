@@ -7,25 +7,24 @@ import { Renderable } from './Renderable';
 
 export class NamedType implements Renderable, AstTypeNode {
   constructor(
-    readonly fieldRenderer: FieldRenderer,
     readonly namedTypeNode: NamedTypeNode,
     readonly isNonNull: boolean,
     readonly isDefined: boolean
   ) {}
 
-  public render(fieldMetadata: FieldMetadata) {
+  public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
     const gen =
-      this.fieldRenderer.generateNameNodeYupSchema(this.namedTypeNode.name) +
+      fieldRenderer.generateNameNodeYupSchema(this.namedTypeNode.name) +
       fieldMetadata.getGeneratedCodesForDirectives().rules;
     if (this.isNonNull) {
-      const ret = this.fieldRenderer.shouldEmitAsNotAllowEmptyString(this.namedTypeNode.name.value)
+      const ret = fieldRenderer.shouldEmitAsNotAllowEmptyString(this.namedTypeNode.name.value)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
       return this.isDefined ? `${ret}.defined()` : `${ret}`;
     }
 
     // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    const typ = this.fieldRenderer.getVisitor().getType(this.namedTypeNode.name.value);
+    const typ = fieldRenderer.getVisitor().getType(this.namedTypeNode.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       const ret = `${gen}`;
       return this.isDefined ? `${ret}.defined()` : `${ret}`;

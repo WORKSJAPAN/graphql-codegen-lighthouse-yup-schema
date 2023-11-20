@@ -1,5 +1,6 @@
+import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
 
 export interface Renderable {
-  render(fieldMetadata: FieldMetadata): string;
+  render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata): string;
 }

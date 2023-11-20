@@ -1,3 +1,4 @@
+import { FieldRenderer } from '../FieldRenderer';
 import { AstTypeNode } from './AstTypeNode';
 import { FieldMetadata } from './FieldMetadata';
 import { Renderable } from './Renderable';
@@ -9,8 +10,8 @@ export class ListType implements Renderable, AstTypeNode {
     private readonly isDefined: boolean
   ) {}
 
-  public render(fieldMetadata: FieldMetadata) {
-    const rendered = this.child.render(fieldMetadata);
+  public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
+    const rendered = this.child.render(fieldRenderer, fieldMetadata);
 
     return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
       this.isNonNull ? '.defined()' : '.nullable()'
