@@ -1,16 +1,18 @@
+import { CompositeRule } from './CompositeRule';
 import { Rule } from './Rule';
 import { RuleRenderer } from './RuleRenderer';
 
+// sometimes は特殊で、他の検証ルールを無視する必要があるため、コールバックで他の検証ルールを渡す形にする。
 export class SometimesRule implements Rule {
   public constructor(
-    private readonly fieldName: string,
-    private readonly children: readonly Rule[]
+    private readonly fieldName: string, // 消したい
+    private readonly continuation: CompositeRule
   ) {}
 
   public getData() {
     return {
       fieldName: this.fieldName,
-      children: this.children,
+      continuation: this.continuation,
     };
   }
 

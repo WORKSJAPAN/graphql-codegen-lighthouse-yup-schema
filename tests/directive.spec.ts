@@ -3,6 +3,8 @@ import { describe, expect, test } from 'vitest';
 
 import { Rules } from '../src/config';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from '../src/yup/DirectiveRenderer';
+import { RuleFactory } from '../src/yup/renderable/rules/RuleFactory';
+import { RuleRenderer } from '../src/yup/renderable/rules/RuleRenderer';
 
 export const action = (
   fieldName: string,
@@ -10,7 +12,7 @@ export const action = (
   ignoreRules: readonly string[],
   directives: readonly ConstDirectiveNode[]
 ): GeneratedCodesForDirectives => {
-  const renderer = new DirectiveRenderer(rules, ignoreRules);
+  const renderer = new DirectiveRenderer(new RuleFactory(rules, ignoreRules), new RuleRenderer());
   return renderer.render(fieldName, directives);
 };
 

@@ -7,13 +7,13 @@ import {
   StringValueNode,
 } from 'graphql';
 
-import { Rules } from '../config';
-import { TsValidationMethodCallMapper } from '../TsValidationMethodCallMapper';
+import { RuleFactory } from './renderable/rules/RuleFactory';
+import { RuleRenderer } from './renderable/rules/RuleRenderer';
 
 export class DirectiveRenderer {
   constructor(
-    readonly rules: Rules = {},
-    readonly ignoreRules: readonly string[] = []
+    private readonly ruleFactory: RuleFactory,
+    private readonly ruleRenderer: RuleRenderer
   ) {}
 
   public render(fieldName: string, directives: readonly ConstDirectiveNode[]): GeneratedCodesForDirectives {
@@ -32,53 +32,19 @@ export class DirectiveRenderer {
   }
 
   private buildApiFromDirectiveArguments(fieldName: string, args: readonly ConstArgumentNode[]): string {
-    let sometimesIncluded = false;
-    const methodChain = args
+    const ruleStrings = args
       .filter(arg => arg.name.value === supportedArgumentName)
       .flatMap(({ value }) => {
         assertValueIsList(value, '`apply` argument must be a list of rules. For Example, ["integer", "max:255"].');
         return value.values.map(value => {
           assertValueIsString(value, 'rules must be a list of string. For Example, ["integer", "max:255"].');
-          const built = this.buildApiSchema(value);
-          if (built.sometimes) {
-            sometimesIncluded = true;
-            return '';
-          }
-          return built.value;
+          return value.value;
         });
-      })
-      .join('');
+      });
 
-    if (sometimesIncluded) {
-      return `.sometimes(${JSON.stringify(fieldName)}, schema => schema${methodChain})`;
-    }
+    const rule = this.ruleFactory.create(fieldName, ruleStrings);
 
-    return methodChain;
-  }
-
-  /**
-   * sometimes は超特殊で、他の検証ルールを無視する必要があるため、コールバックで他の検証ルールを渡す形にする。
-   */
-  private buildApiSchema(argValue: StringValueNode):
-    | {
-        sometimes: false;
-        value: string;
-      }
-    | {
-        sometimes: true;
-      } {
-    if (argValue.value === 'sometimes') {
-      return {
-        sometimes: true,
-      };
-    }
-
-    const mapper = new TsValidationMethodCallMapper(this.rules, this.ignoreRules);
-    const tsValidationRuleMethodCall = mapper.create(argValue.value);
-    return {
-      sometimes: false,
-      value: tsValidationRuleMethodCall?.toString() ?? '',
-    };
+    return rule.render(this.ruleRenderer);
   }
 }
 

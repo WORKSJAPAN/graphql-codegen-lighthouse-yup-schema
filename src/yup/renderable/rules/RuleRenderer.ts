@@ -1,17 +1,23 @@
-import { NormalRule } from './NormalRule';
+import { CompositeRule } from './CompositeRule';
+import { SingleRule } from './SingleRule';
 import { SometimesRule } from './SometimesRule';
 
 export class RuleRenderer {
-  public renderNormalRule(normalRule: NormalRule): string {
-    const { name, args } = normalRule.getData();
-    return `.${name}(${args.map(codifyArgument).join(',')})`;
+  public renderSingleRule(singleRule: SingleRule): string {
+    const { mappedName, rawArgs } = singleRule.getData();
+    return `.${mappedName}(${rawArgs.map(codifyArgument).join(',')})`;
+  }
+
+  public renderCompositeRule(compositeRule: CompositeRule): string {
+    return compositeRule
+      .getData()
+      .children.map(child => child.render(this))
+      .join('');
   }
 
   public renderSometimesRule(sometimesRule: SometimesRule): string {
-    const { fieldName, children } = sometimesRule.getData();
-    const childrenSchema = children.map(child => child.render(this));
-
-    return `.sometimes(${JSON.stringify(fieldName)}, schema => schema${childrenSchema})`;
+    const { fieldName, continuation } = sometimesRule.getData();
+    return `.sometimes(${JSON.stringify(fieldName)}, schema => schema${continuation.render(this)})`;
   }
 }
 

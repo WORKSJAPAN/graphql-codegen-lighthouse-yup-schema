@@ -12,6 +12,8 @@ import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { NodeFactory } from './renderable/NodeFactory';
+import { RuleFactory } from './renderable/rules/RuleFactory';
+import { RuleRenderer } from './renderable/rules/RuleRenderer';
 import { ScalarRenderer } from './ScalarRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
@@ -74,7 +76,15 @@ export class Kit {
   }
 
   getDirectiveRenderer() {
-    return new DirectiveRenderer(this.config.rules, this.config.ignoreRules);
+    return new DirectiveRenderer(this.getRuleFactory(), this.getRuleRenderer());
+  }
+
+  getRuleFactory() {
+    return new RuleFactory(this.config.rules, this.config.ignoreRules);
+  }
+
+  getRuleRenderer() {
+    return new RuleRenderer();
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
