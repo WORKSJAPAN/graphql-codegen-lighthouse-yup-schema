@@ -1,16 +1,16 @@
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { Kind, NameNode } from 'graphql';
+import { Kind } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../../../config';
 import { isSpecifiedScalarName } from '../../../graphql';
 import { Visitor } from '../../../visitor';
+import { ExportTypeStrategy } from '../../exportTypeStrategies/ExportTypeStrategy';
+import { ScalarRenderer } from '../../ScalarRenderer';
+import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
-import { ExportTypeStrategy } from './../../exportTypeStrategies/ExportTypeStrategy';
-import { FieldMetadata } from './../../renderable/field/FieldMetadata';
-import { SchemaASTLazyNode } from './../../renderable/schemaAST/SchemaASTLazyNode';
-import { SchemaASTListNode } from './../../renderable/schemaAST/SchemaASTListNode';
-import { SchemaASTNamedTypeNode } from './../../renderable/schemaAST/SchemaASTNamedTypeNode';
-import { ScalarRenderer } from './../../ScalarRenderer';
+import { SchemaASTLazyNode } from './SchemaASTLazyNode';
+import { SchemaASTListNode } from './SchemaASTListNode';
+import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
 
 export class SchemaASTRenderer {
   constructor(
@@ -58,14 +58,6 @@ export class SchemaASTRenderer {
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
-  private targetKind(node: NameNode) {
-    return this.getNameNodeConverter(node)?.targetKind;
-  }
-
-  private convertedName(node: NameNode) {
-    return this.getNameNodeConverter(node)?.convertName();
-  }
-
   private generateNameNodeYupSchema(name: string, convertedName: string | null, targetKind: Kind | null): string {
     switch (targetKind) {
       case 'InputObjectTypeDefinition':
@@ -76,18 +68,6 @@ export class SchemaASTRenderer {
       default:
         return this.scalarRenderer.render(name, this.scalarDirection);
     }
-  }
-
-  private getNameNodeConverter(node: NameNode) {
-    const typ = this.visitor.getType(node.value);
-    const astNode = typ?.astNode;
-    if (astNode === undefined || astNode === null) {
-      return undefined;
-    }
-    return {
-      targetKind: astNode.kind,
-      convertName: () => this.visitor.convertName(astNode.name.value),
-    };
   }
 
   private shouldEmitAsNotAllowEmptyString(name: string): boolean {
