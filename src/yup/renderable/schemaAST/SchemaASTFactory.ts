@@ -31,7 +31,7 @@ export class SchemaASTFactory {
     if (isNamedType(graphQLTypeNode)) {
       const ret = new SchemaASTNamedTypeNode({
         name: graphQLTypeNode.name.value,
-        convertedName: this.convertedName(graphQLTypeNode.name),
+        convertedName: this.visitor.convertName(graphQLTypeNode.name.value),
         kind: this.visitor.getKind(graphQLTypeNode.name.value),
         tsType: this.visitor.getTypeScriptScalarType(graphQLTypeNode.name.value, this.scalarDirection),
         isNonNull,
@@ -44,16 +44,5 @@ export class SchemaASTFactory {
 
   private isLazy(graphQLTypeNode: NamedTypeNode): boolean {
     return isInput(graphQLTypeNode.name.value) && this.lazyTypes.includes(graphQLTypeNode.name.value);
-  }
-
-  private convertedName(graphQLNameNode: NameNode) {
-    return this.getNameNodeConverter(graphQLNameNode)?.convertName() ?? null;
-  }
-
-  private getNameNodeConverter(node: NameNode) {
-    this.visitor.getKind(node.value);
-    return {
-      convertName: () => this.visitor.convertName(node.value),
-    };
   }
 }
