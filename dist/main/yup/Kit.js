@@ -1,0 +1,100 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Kit = void 0;
+const visitor_1 = require("../visitor");
+const ConstExportTypeStrategy_1 = require("./exportTypeStrategies/ConstExportTypeStrategy");
+const FunctionExportTypeStrategy_1 = require("./exportTypeStrategies/FunctionExportTypeStrategy");
+const ImportBuilder_1 = require("./ImportBuilder");
+const InitialEmitter_1 = require("./InitialEmitter");
+const FieldFactory_1 = require("./renderable/field/FieldFactory");
+const FieldRenderer_1 = require("./renderable/field/FieldRenderer");
+const RuleASTFactory_1 = require("./renderable/ruleAST/RuleASTFactory");
+const RuleASTRenderer_1 = require("./renderable/ruleAST/RuleASTRenderer");
+const SchemaASTFactory_1 = require("./renderable/schemaAST/SchemaASTFactory");
+const SchemaASTRenderer_1 = require("./renderable/schemaAST/SchemaASTRenderer");
+const ShapeRenderer_1 = require("./ShapeRenderer");
+const EnumTypeDefinitionFactory_1 = require("./visitFunctionFactories/EnumTypeDefinitionFactory");
+const InputObjectTypeDefinitionFactory_1 = require("./visitFunctionFactories/InputObjectTypeDefinitionFactory");
+const ObjectTypeDefinitionFactory_1 = require("./visitFunctionFactories/ObjectTypeDefinitionFactory");
+const UnionTypesDefinitionFactory_1 = require("./visitFunctionFactories/UnionTypesDefinitionFactory");
+const AllWithObjectTypesSpec_1 = require("./withObjectTypesSpecs/AllWithObjectTypesSpec");
+const NoReservedWithObjectTypesSpec_1 = require("./withObjectTypesSpecs/NoReservedWithObjectTypesSpec");
+const NullWithObjectTypesSpec_1 = require("./withObjectTypesSpecs/NullWithObjectTypesSpec");
+class Kit {
+    constructor(schema, config) {
+        this.schema = schema;
+        this.config = config;
+    }
+    getVisitor() {
+        return new visitor_1.Visitor(this.schema, this.config);
+    }
+    getWithObjectTypesSpec() {
+        var _a;
+        const type = (_a = this.config.withObjectType) !== null && _a !== void 0 ? _a : false;
+        switch (type) {
+            case 'no-reserved':
+                return new NoReservedWithObjectTypesSpec_1.NoReservedWithObjectTypesSpec();
+            case 'all':
+                return new AllWithObjectTypesSpec_1.AllWithObjectTypesSpec();
+            case false:
+                return new NullWithObjectTypesSpec_1.NullWithObjectTypesSpec();
+            default:
+                return assertNever(type);
+        }
+    }
+    getExportTypesStrategy() {
+        var _a;
+        const type = (_a = this.config.validationSchemaExportType) !== null && _a !== void 0 ? _a : 'function';
+        switch (type) {
+            case 'function':
+                return new FunctionExportTypeStrategy_1.FunctionExportTypeStrategy();
+            case 'const':
+                return new ConstExportTypeStrategy_1.ConstExportTypeStrategy();
+            default:
+                return assertNever(type);
+        }
+    }
+    getFieldRenderer() {
+        return new FieldRenderer_1.FieldRenderer(this.getSchemaASTRenderer());
+    }
+    getSchemaASTRenderer() {
+        return new SchemaASTRenderer_1.SchemaASTRenderer(this.config, this.getRuleASTRenderer(), this.getExportTypesStrategy());
+    }
+    getRuleASTFactory() {
+        return new RuleASTFactory_1.RuleASTFactory(this.config.rules, this.config.ignoreRules);
+    }
+    getRuleASTRenderer() {
+        return new RuleASTRenderer_1.RuleASTRenderer();
+    }
+    getShapeRenderer(scalarDirection) {
+        return new ShapeRenderer_1.ShapeRenderer(this.getFieldRenderer(), this.getFieldFactory(scalarDirection));
+    }
+    getSchemaASTFactory(scalarDirection) {
+        return new SchemaASTFactory_1.SchemaASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
+    }
+    getFieldFactory(scalarDirection) {
+        return new FieldFactory_1.FieldFactory(this.getSchemaASTFactory(scalarDirection), this.getRuleASTFactory());
+    }
+    getImportBuilder() {
+        return new ImportBuilder_1.ImportBuilder(this.config.importFrom, this.config.useTypeImports);
+    }
+    getInitialEmitter() {
+        return new InitialEmitter_1.InitialEmitter(this.getWithObjectTypesSpec());
+    }
+    getInputObjectTypeDefinitionFactory(registry) {
+        return new InputObjectTypeDefinitionFactory_1.InputObjectTypeDefinitionFactory(registry, this.getVisitor(), this.getExportTypesStrategy(), this.getShapeRenderer('input'));
+    }
+    getObjectTypeDefinitionFactory(registry) {
+        return new ObjectTypeDefinitionFactory_1.ObjectTypeDefinitionFactory(registry, this.getVisitor(), this.getWithObjectTypesSpec(), this.getExportTypesStrategy(), this.getShapeRenderer('output'), this.config.addUnderscoreToArgsType);
+    }
+    getEnumTypeDefinitionFactory(registry) {
+        return new EnumTypeDefinitionFactory_1.EnumTypeDefinitionFactory(this.config.enumsAsTypes, registry, this.getVisitor());
+    }
+    getUnionTypesDefinitionFactory(registry) {
+        return new UnionTypesDefinitionFactory_1.UnionTypesDefinitionFactory(registry, this.getVisitor(), this.getWithObjectTypesSpec(), this.getExportTypesStrategy());
+    }
+}
+exports.Kit = Kit;
+function assertNever(type) {
+    throw new Error(`undefined type ${type}`);
+}
