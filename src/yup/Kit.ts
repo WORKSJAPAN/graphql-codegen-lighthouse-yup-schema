@@ -65,6 +65,7 @@ export class Kit {
     return new FieldRenderer(
       this.config,
       this.getVisitor(),
+      this.getDirectiveRenderer(),
       this.getExportTypesStrategy(),
       this.getScalarRenderer(),
       scalarDirection
@@ -88,11 +89,7 @@ export class Kit {
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(
-      this.getFieldRenderer(scalarDirection),
-      this.getDirectiveRenderer(),
-      this.getNodeFactory(scalarDirection)
-    );
+    return new ShapeRenderer(this.getFieldRenderer(scalarDirection), this.getNodeFactory(scalarDirection));
   }
 
   getNodeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {

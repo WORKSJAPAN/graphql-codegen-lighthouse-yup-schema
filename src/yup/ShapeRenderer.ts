@@ -1,6 +1,5 @@
 import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
-import { DirectiveRenderer } from './DirectiveRenderer';
 import { FieldRenderer } from './FieldRenderer';
 import { Field } from './renderable/Field';
 import { NodeFactory } from './renderable/NodeFactory';
@@ -8,7 +7,6 @@ import { NodeFactory } from './renderable/NodeFactory';
 export class ShapeRenderer {
   constructor(
     private readonly fieldRenderer: FieldRenderer,
-    private readonly directiveRenderer: DirectiveRenderer,
     private readonly nodeFactory: NodeFactory
   ) {}
 
@@ -16,8 +14,8 @@ export class ShapeRenderer {
     return fields
       ?.map(field => {
         const node = this.nodeFactory.create(field.type);
-        const astField = new Field(this.fieldRenderer, this.directiveRenderer, field, node);
-        return astField.render();
+        const astField = new Field(field, node);
+        return astField.render(this.fieldRenderer);
       })
       .join(',\n');
   }

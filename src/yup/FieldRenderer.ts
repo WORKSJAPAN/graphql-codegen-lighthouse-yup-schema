@@ -1,10 +1,12 @@
-import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
+import { indent, NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 import { NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { isSpecifiedScalarName } from '../graphql';
+import { isNonNullType, isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
+import { DirectiveRenderer } from './DirectiveRenderer';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
+import { Field } from './renderable/Field';
 import { FieldMetadata } from './renderable/FieldMetadata';
 import { Lazy } from './renderable/Lazy';
 import { ListType } from './renderable/ListType';
@@ -15,10 +17,26 @@ export class FieldRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly visitor: Visitor,
+    private readonly directiveRenderer: DirectiveRenderer,
     private readonly exportTypeStrategy: ExportTypeStrategy,
     private readonly scalarRenderer: ScalarRenderer,
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
+
+  public renderField(field: Field) {
+    const { graphQLFieldNode, node } = field.getData();
+    const generatedCodesForDirectives = this.directiveRenderer.render(
+      graphQLFieldNode.name.value,
+      graphQLFieldNode.directives ?? []
+    );
+
+    const fieldMetadata = new FieldMetadata(generatedCodesForDirectives);
+
+    const rendered = node.render(this, fieldMetadata);
+    const gen = isNonNullType(graphQLFieldNode.type) ? rendered : `${rendered}.optional()`;
+
+    return indent(`${graphQLFieldNode.name.value}: ${gen}`, 2);
+  }
 
   public renderLazy(lazy: Lazy, fieldMetadata: FieldMetadata): string {
     const { child } = lazy.getData();
