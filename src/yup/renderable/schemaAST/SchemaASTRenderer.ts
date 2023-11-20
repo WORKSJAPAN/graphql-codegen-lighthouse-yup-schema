@@ -49,8 +49,7 @@ export class SchemaASTRenderer {
     }
 
     // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    const typ = this.visitor.getGraphQLNamedType(name);
-    if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
+    if (kind === 'InputObjectTypeDefinition') {
       const ret = `${gen}`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
     }
@@ -70,7 +69,7 @@ export class SchemaASTRenderer {
     }
   }
 
-  private shouldEmitAsNotAllowEmptyString(name: string, kind: Kind | null, tsType: string): boolean {
+  private shouldEmitAsNotAllowEmptyString(name: string, kind: Kind | null, tsType: string | null): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }

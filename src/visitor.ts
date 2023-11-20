@@ -12,8 +12,8 @@ export class Visitor extends TsVisitor {
     super(schema, pluginConfig);
   }
 
-  public getGraphQLNamedType(graphQLTypeName: string) {
-    return this.schema.getType(graphQLTypeName);
+  public getKind(graphQLTypeName: string) {
+    return this.schema.getType(graphQLTypeName)?.astNode?.kind ?? null;
   }
 
   public getTypeScriptScalarType(
