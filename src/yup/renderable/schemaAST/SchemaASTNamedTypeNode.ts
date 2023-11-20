@@ -1,5 +1,6 @@
 import { Kind } from 'graphql';
 
+import { GetKindResult } from '../../../visitor';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { SchemaASTRenderer } from './SchemaASTRenderer';
 import { SchemaASTTypeNode } from './SchemaASTTypeNode';
@@ -10,7 +11,7 @@ export class SchemaASTNamedTypeNode implements SchemaASTTypeNode {
       graphQLTypeName: string;
       tsTypeName: string | null;
       convertedName: string;
-      kind: Kind | null;
+      kind: GetKindResult;
       isNonNull: boolean;
       isDefined: boolean;
     }>

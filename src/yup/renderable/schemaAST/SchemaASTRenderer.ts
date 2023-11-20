@@ -31,17 +31,17 @@ export class SchemaASTRenderer {
   }
 
   public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { graphQLTypeName, kind, tsTypeName, isNonNull, isDefined } = namedType.getData();
+    const { kind, isNonNull, isDefined } = namedType.getData();
     const gen = this.generateNameNodeYupSchema(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
-      const ret = this.shouldEmitAsNotAllowEmptyString(graphQLTypeName, kind, tsTypeName)
+      const ret = this.shouldEmitAsNotAllowEmptyString(namedType)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
     }
 
     // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    if (kind === 'InputObjectTypeDefinition') {
+    if (kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {
       const ret = `${gen}`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
     }
@@ -52,25 +52,30 @@ export class SchemaASTRenderer {
   private generateNameNodeYupSchema(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): string {
     const { kind, convertedName } = schemaASTNamedTypeNode.getData();
     switch (kind) {
-      case 'InputObjectTypeDefinition':
-      case 'ObjectTypeDefinition':
-      case 'UnionTypeDefinition':
-      case 'EnumTypeDefinition':
+      case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+      case Kind.OBJECT_TYPE_DEFINITION:
+      case Kind.UNION_TYPE_DEFINITION:
+      case Kind.ENUM_TYPE_DEFINITION:
         return this.exportTypeStrategy.schemaEvaluation(`${convertedName}Schema`, kind);
-      default:
+      case Kind.SCALAR_TYPE_DEFINITION:
+      case null:
         return this.renderScalar(schemaASTNamedTypeNode);
+      default:
+        return assertsNeverKind(kind);
     }
   }
 
-  private shouldEmitAsNotAllowEmptyString(name: string, kind: Kind | null, tsType: string | null): boolean {
+  private shouldEmitAsNotAllowEmptyString(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }
-    if (kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
+
+    const { kind, graphQLTypeName, tsTypeName } = schemaASTNamedTypeNode.getData();
+    if (kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(graphQLTypeName)) {
       return false;
     }
 
-    return tsType === 'string';
+    return tsTypeName === 'string';
   }
 
   private renderScalar(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): string {
@@ -91,4 +96,8 @@ export class SchemaASTRenderer {
     console.warn('unhandled name:', graphQLTypeName);
     return `yup.mixed()`;
   }
+}
+
+function assertsNeverKind(kind: never): never {
+  throw new Error(`unexpected kind: ${kind}`);
 }
