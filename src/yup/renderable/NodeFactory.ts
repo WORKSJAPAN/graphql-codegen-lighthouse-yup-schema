@@ -29,10 +29,8 @@ export class NodeFactory {
       return new ListType(this.create(typeNode.type, true), isNonNull, isDefined);
     }
     if (isNamedType(typeNode)) {
-      if (this.isLazy(typeNode)) {
-        return new Lazy(new NamedType(this.fieldRenderer, typeNode, isNonNull, isDefined));
-      }
-      return new NamedType(this.fieldRenderer, typeNode, isNonNull, isDefined);
+      const ret = new NamedType(this.fieldRenderer, typeNode, isNonNull, isDefined);
+      return this.isLazy(typeNode) ? new Lazy(ret) : ret;
     }
     return new NullNode(typeNode);
   }
