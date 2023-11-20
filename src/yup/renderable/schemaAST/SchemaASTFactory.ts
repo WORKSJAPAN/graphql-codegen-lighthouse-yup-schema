@@ -5,7 +5,7 @@ import { isInput, isListType, isNamedType, isNonNullType } from '../../../graphq
 import { Visitor } from '../../../visitor';
 import { SchemaASTLazyNode } from './SchemaASTLazyNode';
 import { SchemaASTListNode } from './SchemaASTListNode';
-import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
+import { SchemaASTNamedTypeNode2 } from './SchemaASTNamedTypeNode2';
 import { SchemaASTNode } from './SchemaASTNode';
 import { SchemaASTNullNode } from './SchemaASTNullNode';
 
@@ -38,9 +38,9 @@ export class SchemaASTFactory {
     graphQLTypeNode: NamedTypeNode,
     isNonNull: boolean,
     isDefined: boolean
-  ): SchemaASTNode {
+  ): SchemaASTNamedTypeNode2 | SchemaASTLazyNode {
     const graphQLTypeName = graphQLTypeNode.name.value;
-    const ret = new SchemaASTNamedTypeNode({
+    const ret = new SchemaASTNamedTypeNode2({
       graphQLTypeName,
       convertedName: this.visitor.convertName(graphQLTypeName),
       kind: this.visitor.getKind(graphQLTypeName),

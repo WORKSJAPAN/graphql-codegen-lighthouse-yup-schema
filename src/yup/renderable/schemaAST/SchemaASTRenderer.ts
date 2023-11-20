@@ -7,7 +7,7 @@ import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
 import { SchemaASTLazyNode } from './SchemaASTLazyNode';
 import { SchemaASTListNode } from './SchemaASTListNode';
-import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
+import { SchemaASTNamedTypeNode2 } from './SchemaASTNamedTypeNode2';
 
 export class SchemaASTRenderer {
   constructor(
@@ -30,7 +30,7 @@ export class SchemaASTRenderer {
     }${isDefined ? '.defined()' : ''}`;
   }
 
-  public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
+  public renderNamedType2(namedType: SchemaASTNamedTypeNode2, fieldMetadata: FieldMetadata): string {
     const { kind, isNonNull, isDefined } = namedType.getData();
     const gen = this.generateNameNodeYupSchema(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
@@ -49,8 +49,8 @@ export class SchemaASTRenderer {
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
-  private generateNameNodeYupSchema(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): string {
-    const { kind, convertedName } = schemaASTNamedTypeNode.getData();
+  private generateNameNodeYupSchema(schemaASTNamedTypeNode2: SchemaASTNamedTypeNode2): string {
+    const { kind, convertedName } = schemaASTNamedTypeNode2.getData();
     switch (kind) {
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
       case Kind.OBJECT_TYPE_DEFINITION:
@@ -59,18 +59,18 @@ export class SchemaASTRenderer {
         return this.exportTypeStrategy.schemaEvaluation(`${convertedName}Schema`, kind);
       case Kind.SCALAR_TYPE_DEFINITION:
       case null:
-        return this.renderScalar(schemaASTNamedTypeNode);
+        return this.renderScalar(schemaASTNamedTypeNode2);
       default:
         return assertsNeverKind(kind);
     }
   }
 
-  private shouldEmitAsNotAllowEmptyString(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): boolean {
+  private shouldEmitAsNotAllowEmptyString(schemaASTNamedTypeNode2: SchemaASTNamedTypeNode2): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }
 
-    const { kind, graphQLTypeName, tsTypeName } = schemaASTNamedTypeNode.getData();
+    const { kind, graphQLTypeName, tsTypeName } = schemaASTNamedTypeNode2.getData();
     if (kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(graphQLTypeName)) {
       return false;
     }
@@ -78,8 +78,8 @@ export class SchemaASTRenderer {
     return tsTypeName === 'string';
   }
 
-  private renderScalar(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): string {
-    const { graphQLTypeName, tsTypeName } = schemaASTNamedTypeNode.getData();
+  private renderScalar(schemaASTNamedTypeNode2: SchemaASTNamedTypeNode2): string {
+    const { graphQLTypeName, tsTypeName } = schemaASTNamedTypeNode2.getData();
     const scalarSchemas = this.config.scalarSchemas || {};
 
     if (scalarSchemas[graphQLTypeName]) {
