@@ -62,7 +62,7 @@ export class SchemaASTFactory {
     }
     return {
       targetKind: astNode.kind,
-      convertName: () => this.visitor.convertName(astNode.name.value),
+      convertName: () => this.visitor.convertName(node.value),
     };
   }
 }
