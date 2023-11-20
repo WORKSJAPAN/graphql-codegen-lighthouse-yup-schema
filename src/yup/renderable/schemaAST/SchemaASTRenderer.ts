@@ -1,10 +1,8 @@
-import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 import { Kind } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../../../config';
 import { isSpecifiedScalarName } from '../../../graphql';
 import { ExportTypeStrategy } from '../../exportTypeStrategies/ExportTypeStrategy';
-import { ScalarRenderer } from '../../ScalarRenderer';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
 import { SchemaASTLazyNode } from './SchemaASTLazyNode';
@@ -15,9 +13,7 @@ export class SchemaASTRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly ruleASTRenderer: RuleASTRenderer,
-    private readonly exportTypeStrategy: ExportTypeStrategy,
-    private readonly scalarRenderer: ScalarRenderer,
-    private readonly scalarDirection: keyof NormalizedScalarsMap[string]
+    private readonly exportTypeStrategy: ExportTypeStrategy
   ) {}
 
   public renderLazy(lazy: SchemaASTLazyNode, fieldMetadata: FieldMetadata): string {
@@ -35,10 +31,8 @@ export class SchemaASTRenderer {
   }
 
   public renderNamedType(namedType: SchemaASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { graphQLTypeName, convertedName, kind, tsTypeName, isNonNull, isDefined } = namedType.getData();
-    const gen =
-      this.generateNameNodeYupSchema(graphQLTypeName, convertedName, kind) +
-      fieldMetadata.getData().rule.render(this.ruleASTRenderer);
+    const { graphQLTypeName, kind, tsTypeName, isNonNull, isDefined } = namedType.getData();
+    const gen = this.generateNameNodeYupSchema(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
       const ret = this.shouldEmitAsNotAllowEmptyString(graphQLTypeName, kind, tsTypeName)
         ? `${gen}.defined().required()`
@@ -55,15 +49,16 @@ export class SchemaASTRenderer {
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
-  private generateNameNodeYupSchema(name: string, convertedName: string | null, targetKind: Kind | null): string {
-    switch (targetKind) {
+  private generateNameNodeYupSchema(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): string {
+    const { kind, convertedName } = schemaASTNamedTypeNode.getData();
+    switch (kind) {
       case 'InputObjectTypeDefinition':
       case 'ObjectTypeDefinition':
       case 'UnionTypeDefinition':
       case 'EnumTypeDefinition':
-        return this.exportTypeStrategy.schemaEvaluation(`${convertedName}Schema`, targetKind);
+        return this.exportTypeStrategy.schemaEvaluation(`${convertedName}Schema`, kind);
       default:
-        return this.scalarRenderer.render(name, this.scalarDirection);
+        return this.renderScalar(schemaASTNamedTypeNode);
     }
   }
 
@@ -76,5 +71,24 @@ export class SchemaASTRenderer {
     }
 
     return tsType === 'string';
+  }
+
+  private renderScalar(schemaASTNamedTypeNode: SchemaASTNamedTypeNode): string {
+    const { graphQLTypeName, tsTypeName } = schemaASTNamedTypeNode.getData();
+    const scalarSchemas = this.config.scalarSchemas || {};
+
+    if (scalarSchemas[graphQLTypeName]) {
+      return `${scalarSchemas[graphQLTypeName]}`;
+    }
+    switch (tsTypeName) {
+      case 'string':
+        return `yup.string()`;
+      case 'number':
+        return `yup.number()`;
+      case 'boolean':
+        return `yup.boolean()`;
+    }
+    console.warn('unhandled name:', graphQLTypeName);
+    return `yup.mixed()`;
   }
 }
