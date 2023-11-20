@@ -6,16 +6,23 @@ import { Renderable } from './Renderable';
 export class ListType implements Renderable, AstTypeNode {
   constructor(
     private readonly child: Renderable,
-    private readonly isNonNull: boolean,
-    private readonly isDefined: boolean
+    private readonly _isNonNull: boolean,
+    private readonly _isDefined: boolean
   ) {}
 
-  public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
-    const rendered = this.child.render(fieldRenderer, fieldMetadata);
+  public getChild() {
+    return this.child;
+  }
 
-    return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
-      this.isNonNull ? '.defined()' : '.nullable()'
-    }${this.isDefined ? '.defined()' : ''}`;
-    // TODO: defined() がいっぱいついてしまうの直す
+  public isNonNull() {
+    return this._isNonNull;
+  }
+
+  public isDefined() {
+    return this._isDefined;
+  }
+
+  public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
+    return fieldRenderer.renderList(this, fieldMetadata);
   }
 }

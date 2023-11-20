@@ -5,6 +5,9 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
+import { FieldMetadata } from './renderable/FieldMetadata';
+import { Lazy } from './renderable/Lazy';
+import { ListType } from './renderable/ListType';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
@@ -16,8 +19,16 @@ export class FieldRenderer {
     private readonly scalarDirection: keyof NormalizedScalarsMap[string]
   ) {}
 
-  public renderLazy(innerSchema: string): string {
-    return `yup.lazy(() => ${innerSchema})`;
+  public renderLazy(lazy: Lazy, fieldMetadata: FieldMetadata): string {
+    return `yup.lazy(() => ${lazy.getChild().render(this, fieldMetadata)})`;
+  }
+
+  public renderList(list: ListType, fieldMetadata: FieldMetadata): string {
+    const rendered = list.getChild().render(this, fieldMetadata);
+
+    return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
+      list.isNonNull() ? '.defined()' : '.nullable()'
+    }${list.isDefined() ? '.defined()' : ''}`;
   }
 
   public generateNameNodeYupSchema(node: NameNode): string {
