@@ -29,18 +29,26 @@ export class SchemaASTFactory {
       return new SchemaASTListNode(this.create(graphQLTypeNode.type, true), isNonNull, isDefined);
     }
     if (isNamedType(graphQLTypeNode)) {
-      const graphQLTypeName = graphQLTypeNode.name.value;
-      const ret = new SchemaASTNamedTypeNode({
-        graphQLTypeName,
-        convertedName: this.visitor.convertName(graphQLTypeName),
-        kind: this.visitor.getKind(graphQLTypeName),
-        tsTypeName: this.visitor.getTypeScriptScalarType(graphQLTypeName, this.scalarDirection),
-        isNonNull,
-        isDefined,
-      });
-      return this.isLazy(graphQLTypeName) ? new SchemaASTLazyNode(ret) : ret;
+      return this.createFromNamedTypeNode(graphQLTypeNode, isNonNull, isDefined);
     }
     return new SchemaASTNullNode(graphQLTypeNode);
+  }
+
+  private createFromNamedTypeNode(
+    graphQLTypeNode: NamedTypeNode,
+    isNonNull: boolean,
+    isDefined: boolean
+  ): SchemaASTNode {
+    const graphQLTypeName = graphQLTypeNode.name.value;
+    const ret = new SchemaASTNamedTypeNode({
+      graphQLTypeName,
+      convertedName: this.visitor.convertName(graphQLTypeName),
+      kind: this.visitor.getKind(graphQLTypeName),
+      tsTypeName: this.visitor.getTypeScriptScalarType(graphQLTypeName, this.scalarDirection),
+      isNonNull,
+      isDefined,
+    });
+    return this.isLazy(graphQLTypeName) ? new SchemaASTLazyNode(ret) : ret;
   }
 
   private isLazy(graphQLTypeName: string): boolean {

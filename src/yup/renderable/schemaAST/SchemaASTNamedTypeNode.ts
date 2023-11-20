@@ -1,5 +1,3 @@
-import { Kind } from 'graphql';
-
 import { GetKindResult } from '../../../visitor';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { SchemaASTRenderer } from './SchemaASTRenderer';
