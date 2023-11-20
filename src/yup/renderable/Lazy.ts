@@ -6,10 +6,10 @@ export class Lazy implements Renderable {
   constructor(private readonly child: AstTypeNode) {}
 
   public render(fieldMetadata: FieldMetadata) {
-    return this.child.render(fieldMetadata);
+    return `yup.lazy(() => ${this.child.render(fieldMetadata)})`;
   }
 
   public shouldBeLazy(fieldMetadata: FieldMetadata): boolean {
-    return true;
+    return false;
   }
 }
