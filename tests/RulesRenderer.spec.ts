@@ -2,16 +2,18 @@ import { ConstDirectiveNode, Kind } from 'graphql';
 import { describe, expect, test } from 'vitest';
 
 import { Rules } from '../src/config';
-import { DirectiveRenderer, GeneratedCodesForDirectives } from '../src/yup/DirectiveRenderer';
+import { DirectiveRenderer } from '../src/yup/DirectiveRenderer';
 import { RuleFactory } from '../src/yup/renderable/rules/RuleFactory';
 import { RuleRenderer } from '../src/yup/renderable/rules/RuleRenderer';
+
+type GeneratedCodesForDirectives = Record<string, string>;
 
 export const action = (
   fieldName: string,
   rules: Rules,
   ignoreRules: readonly string[],
   directives: readonly ConstDirectiveNode[]
-): GeneratedCodesForDirectives => {
+) => {
   const directiveRenderer = new DirectiveRenderer(new RuleFactory(rules, ignoreRules));
   const created = directiveRenderer.createMany(fieldName, directives);
   const ruleRenderer = new RuleRenderer();

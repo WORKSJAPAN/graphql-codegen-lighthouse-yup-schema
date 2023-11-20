@@ -1,3 +1,5 @@
+import { ConstDirectiveNode, ConstListValueNode, ConstValueNode, Kind, StringValueNode } from 'graphql';
+
 import { Rules } from '../../../config';
 import { CompositeRule } from './CompositeRule';
 import { SingleRule } from './SingleRule';
@@ -9,7 +11,25 @@ export class RuleFactory {
     private ignoreRules: readonly string[] = []
   ) {}
 
-  create(fieldName: string, ruleStrings: readonly string[]): CompositeRule | SometimesRule {
+  public supports(directive: ConstDirectiveNode) {
+    return supportedDirectiveNames.includes(directive.name.value as SupportedDirectiveName);
+  }
+
+  public createFromDirective(fieldName: string, directive: ConstDirectiveNode) {
+    const ruleStrings = (directive.arguments ?? [])
+      .filter(arg => arg.name.value === supportedArgumentName)
+      .flatMap(({ value }) => {
+        assertValueIsList(value, '`apply` argument must be a list of rules. For Example, ["integer", "max:255"].');
+        return value.values.map(value => {
+          assertValueIsString(value, 'rules must be a list of string. For Example, ["integer", "max:255"].');
+          return value.value;
+        });
+      });
+
+    return this.helper(fieldName, ruleStrings);
+  }
+
+  private helper(fieldName: string, ruleStrings: readonly string[]): CompositeRule | SometimesRule {
     const parsed = ruleStrings.flatMap(ruleString => {
       const validationRule = parse(ruleString);
 
@@ -59,3 +79,26 @@ export const parse = (ruleString: string): LaravelValidationRule => {
     rawArgs,
   };
 };
+
+/**
+ * GraphQL schema
+ * ```graphql
+ * input ExampleInput {
+ *   email: String! @rules(apply: ["minLength:100", "email"])
+ * }
+ */
+const supportedDirectiveNames = ['rules', 'rulesForArray'] as const;
+type SupportedDirectiveName = (typeof supportedDirectiveNames)[number];
+const supportedArgumentName = 'apply';
+
+function assertValueIsList(value: ConstValueNode, message: string): asserts value is ConstListValueNode {
+  if (value.kind !== Kind.LIST) {
+    throw new Error(message);
+  }
+}
+
+function assertValueIsString(value: ConstValueNode, message: string): asserts value is StringValueNode {
+  if (value.kind !== Kind.STRING) {
+    throw new Error(message);
+  }
+}
