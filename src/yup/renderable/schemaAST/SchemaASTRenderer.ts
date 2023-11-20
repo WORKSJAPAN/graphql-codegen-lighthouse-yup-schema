@@ -48,7 +48,7 @@ export class SchemaASTRenderer {
     }
 
     // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    const typ = this.getVisitor().getType(namedTypeNode.name.value);
+    const typ = this.visitor.getType(namedTypeNode.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       const ret = `${gen}`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
@@ -93,9 +93,5 @@ export class SchemaASTRenderer {
     }
     const tsType = this.visitor.getScalarType(name, this.scalarDirection);
     return tsType === 'string';
-  }
-
-  public getVisitor() {
-    return this.visitor;
   }
 }
