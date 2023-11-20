@@ -12,8 +12,14 @@ export const action = (
   ignoreRules: readonly string[],
   directives: readonly ConstDirectiveNode[]
 ): GeneratedCodesForDirectives => {
-  const renderer = new DirectiveRenderer(new RuleFactory(rules, ignoreRules), new RuleRenderer());
-  return renderer.render(fieldName, directives);
+  const directiveRenderer = new DirectiveRenderer(new RuleFactory(rules, ignoreRules));
+  const created = directiveRenderer.createMany(fieldName, directives);
+  const ruleRenderer = new RuleRenderer();
+
+  return {
+    rules: created.rules.render(ruleRenderer),
+    rulesForArray: created.rulesForArray.render(ruleRenderer),
+  };
 };
 
 const buildRulesDirectiveNode = (rules: readonly string[]): ConstDirectiveNode => ({

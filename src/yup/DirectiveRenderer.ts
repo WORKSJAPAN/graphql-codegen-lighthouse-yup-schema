@@ -10,28 +10,9 @@ import {
 import { CompositeRule } from './renderable/rules/CompositeRule';
 import { Rule } from './renderable/rules/Rule';
 import { RuleFactory } from './renderable/rules/RuleFactory';
-import { RuleRenderer } from './renderable/rules/RuleRenderer';
 
 export class DirectiveRenderer {
-  constructor(
-    private readonly ruleFactory: RuleFactory,
-    private readonly ruleRenderer: RuleRenderer
-  ) {}
-
-  public render(fieldName: string, directives: readonly ConstDirectiveNode[]): GeneratedCodesForDirectives {
-    const ret: GeneratedCodesForDirectives = {
-      rules: '',
-      rulesForArray: '',
-    };
-
-    for (const directive of directives) {
-      if (isSupportedDirective(directive.name.value)) {
-        ret[directive.name.value] = this.buildApiFromDirectiveArguments(fieldName, directive.arguments ?? []);
-      }
-    }
-
-    return ret;
-  }
+  constructor(private readonly ruleFactory: RuleFactory) {}
 
   public createMany(
     fieldName: string,
@@ -49,10 +30,6 @@ export class DirectiveRenderer {
     }
 
     return ret;
-  }
-
-  private buildApiFromDirectiveArguments(fieldName: string, args: readonly ConstArgumentNode[]): string {
-    return this.buildApiFromDirectiveArguments2(fieldName, args).render(this.ruleRenderer);
   }
 
   private buildApiFromDirectiveArguments2(fieldName: string, args: readonly ConstArgumentNode[]): Rule {

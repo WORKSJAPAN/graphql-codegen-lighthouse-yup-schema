@@ -14,14 +14,9 @@ export class FieldFactory {
   ) {}
 
   public create(graphQLFieldNode: InputValueDefinitionNode | FieldDefinitionNode): Field {
-    const generatedCodesForDirectives = this.directiveRenderer.render(
-      graphQLFieldNode.name.value,
-      graphQLFieldNode.directives ?? []
-    );
-
     const aaa = this.directiveRenderer.createMany(graphQLFieldNode.name.value, graphQLFieldNode.directives ?? []);
 
-    const metadata = new FieldMetadata(generatedCodesForDirectives, graphQLFieldNode, aaa.rules, aaa.rulesForArray);
+    const metadata = new FieldMetadata(graphQLFieldNode, aaa.rules, aaa.rulesForArray);
 
     return new Field(metadata, this.nodeFactory.create(graphQLFieldNode.type));
   }
