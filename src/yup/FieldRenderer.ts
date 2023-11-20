@@ -2,7 +2,7 @@ import { indent, NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-co
 import { NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { isNonNullType, isSpecifiedScalarName } from '../graphql';
+import { isSpecifiedScalarName } from '../graphql';
 import { Visitor } from '../visitor';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/field/Field';
@@ -25,11 +25,10 @@ export class FieldRenderer {
 
   public renderField(field: Field) {
     const { metadata, node } = field.getData();
-    const { name, graphQLFieldNode } = metadata.getData();
+    const renderedNode = node.render(this, metadata);
 
-    const rendered = node.render(this, metadata);
-    const gen = isNonNullType(graphQLFieldNode.type) ? rendered : `${rendered}.optional()`;
-
+    const { name } = metadata.getData();
+    const gen = metadata.getData().isOptional ? `${renderedNode}.optional()` : renderedNode;
     return indent(`${name}: ${gen}`, 2);
   }
 

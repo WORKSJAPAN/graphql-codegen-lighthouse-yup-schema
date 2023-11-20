@@ -1,5 +1,6 @@
 import { ConstDirectiveNode, FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
+import { isNonNullType } from '../../../graphql';
 import { NodeFactory } from '../NodeFactory';
 import { RuleFactory } from '../rules/RuleFactory';
 import { Field } from './Field';
@@ -19,7 +20,7 @@ export class FieldFactory {
 
     const metadata = new FieldMetadata(
       graphQLFieldNode.name.value,
-      graphQLFieldNode,
+      !isNonNullType(graphQLFieldNode.type),
       this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesDirective ?? null),
       this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null)
     );
