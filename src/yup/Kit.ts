@@ -69,7 +69,6 @@ export class Kit {
   getSchemaASTRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
     return new SchemaASTRenderer(
       this.config,
-      this.getVisitor(),
       this.getRuleASTRenderer(),
       this.getExportTypesStrategy(),
       this.getScalarRenderer(),

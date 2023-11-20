@@ -3,7 +3,6 @@ import { Kind } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../../../config';
 import { isSpecifiedScalarName } from '../../../graphql';
-import { Visitor } from '../../../visitor';
 import { ExportTypeStrategy } from '../../exportTypeStrategies/ExportTypeStrategy';
 import { ScalarRenderer } from '../../ScalarRenderer';
 import { FieldMetadata } from '../field/FieldMetadata';
@@ -15,7 +14,6 @@ import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
 export class SchemaASTRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
-    private readonly visitor: Visitor,
     private readonly ruleASTRenderer: RuleASTRenderer,
     private readonly exportTypeStrategy: ExportTypeStrategy,
     private readonly scalarRenderer: ScalarRenderer,
