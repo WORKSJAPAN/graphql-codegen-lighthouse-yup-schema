@@ -10,8 +10,4 @@ export class NullNode implements Renderable, AstTypeNode {
     console.warn('unhandled type:', this.typeNode);
     return '';
   }
-
-  shouldBeLazy() {
-    return false;
-  }
 }

@@ -31,8 +31,4 @@ export class NamedType implements Renderable, AstTypeNode {
     const ret = `${gen}.nullable()`;
     return this.isDefined ? `${ret}.defined()` : `${ret}`;
   }
-
-  public shouldBeLazy(): boolean {
-    return false;
-  }
 }

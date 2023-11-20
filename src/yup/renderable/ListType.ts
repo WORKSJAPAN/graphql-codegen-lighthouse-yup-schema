@@ -1,7 +1,6 @@
 import { AstTypeNode } from './AstTypeNode';
 import { FieldMetadata } from './FieldMetadata';
 import { Renderable } from './Renderable';
-import { renderLazy } from './utils';
 
 export class ListType implements Renderable, AstTypeNode {
   constructor(
@@ -13,15 +12,8 @@ export class ListType implements Renderable, AstTypeNode {
   public render(fieldMetadata: FieldMetadata) {
     const rendered = this.child.render(fieldMetadata);
 
-    const isChildLazy = this.child.shouldBeLazy(fieldMetadata);
-    const maybeLazy = isChildLazy ? renderLazy(rendered) : rendered;
-
-    return `yup.array(${maybeLazy})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
+    return `yup.array(${rendered})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
       this.isNonNull ? '.defined()' : '.nullable()'
     }${this.isDefined ? '.defined()' : ''}`;
-  }
-
-  public shouldBeLazy(): boolean {
-    return false;
   }
 }

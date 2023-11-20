@@ -8,8 +8,4 @@ export class Lazy implements Renderable {
   public render(fieldMetadata: FieldMetadata) {
     return `yup.lazy(() => ${this.child.render(fieldMetadata)})`;
   }
-
-  public shouldBeLazy(fieldMetadata: FieldMetadata): boolean {
-    return false;
-  }
 }

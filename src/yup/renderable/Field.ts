@@ -5,9 +5,7 @@ import { isNonNullType } from '../../graphql';
 import { DirectiveRenderer, GeneratedCodesForDirectives } from '../DirectiveRenderer';
 import { FieldRenderer } from '../FieldRenderer';
 import { FieldMetadata } from './FieldMetadata';
-import { NodeFactory } from './NodeFactory';
 import { Renderable } from './Renderable';
-import { renderLazy } from './utils';
 
 export class Field {
   constructor(
@@ -31,8 +29,6 @@ export class Field {
     const fieldMetadata = new FieldMetadata(generatedCodesForDirectives);
 
     const rendered = this.node.render(fieldMetadata);
-    const isLazy = this.node.shouldBeLazy(fieldMetadata);
-    const maybeLazy = isLazy ? renderLazy(rendered) : rendered;
-    return isNonNullType(typeNode) ? maybeLazy : `${maybeLazy}.optional()`;
+    return isNonNullType(typeNode) ? rendered : `${rendered}.optional()`;
   }
 }
