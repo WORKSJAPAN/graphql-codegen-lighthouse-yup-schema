@@ -83,7 +83,7 @@ export class SchemaASTRenderer {
     };
   }
 
-  public shouldEmitAsNotAllowEmptyString(name: string): boolean {
+  private shouldEmitAsNotAllowEmptyString(name: string): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }
