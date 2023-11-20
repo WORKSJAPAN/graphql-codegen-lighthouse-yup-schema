@@ -19,7 +19,9 @@ export class FieldFactory {
       graphQLFieldNode.directives ?? []
     );
 
-    const metadata = new FieldMetadata(generatedCodesForDirectives, graphQLFieldNode);
+    const aaa = this.directiveRenderer.createMany(graphQLFieldNode.name.value, graphQLFieldNode.directives ?? []);
+
+    const metadata = new FieldMetadata(generatedCodesForDirectives, graphQLFieldNode, aaa.rules, aaa.rulesForArray);
 
     return new Field(metadata, this.nodeFactory.create(graphQLFieldNode.type));
   }

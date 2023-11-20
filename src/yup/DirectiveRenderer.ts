@@ -7,6 +7,7 @@ import {
   StringValueNode,
 } from 'graphql';
 
+import { Rule } from './renderable/rules/Rule';
 import { RuleFactory } from './renderable/rules/RuleFactory';
 import { RuleRenderer } from './renderable/rules/RuleRenderer';
 
@@ -31,7 +32,29 @@ export class DirectiveRenderer {
     return ret;
   }
 
+  public createMany(
+    fieldName: string,
+    directives: readonly ConstDirectiveNode[]
+  ): Record<SupportedDirectiveName, Rule> {
+    const ret: Record<SupportedDirectiveName, Rule> = {
+      rules: null!,
+      rulesForArray: null!,
+    };
+
+    for (const directive of directives) {
+      if (isSupportedDirective(directive.name.value)) {
+        ret[directive.name.value] = this.buildApiFromDirectiveArguments2(fieldName, directive.arguments ?? []);
+      }
+    }
+
+    return ret;
+  }
+
   private buildApiFromDirectiveArguments(fieldName: string, args: readonly ConstArgumentNode[]): string {
+    return this.buildApiFromDirectiveArguments2(fieldName, args).render(this.ruleRenderer);
+  }
+
+  private buildApiFromDirectiveArguments2(fieldName: string, args: readonly ConstArgumentNode[]): Rule {
     const ruleStrings = args
       .filter(arg => arg.name.value === supportedArgumentName)
       .flatMap(({ value }) => {
@@ -42,9 +65,7 @@ export class DirectiveRenderer {
         });
       });
 
-    const rule = this.ruleFactory.create(fieldName, ruleStrings);
-
-    return rule.render(this.ruleRenderer);
+    return this.ruleFactory.create(fieldName, ruleStrings);
   }
 }
 
