@@ -98,7 +98,7 @@ export class Kit {
   }
 
   getFieldFactory() {
-    return new FieldFactory(this.getNodeFactory(), this.getRuleFactory());
+    return new FieldFactory(this.getNodeFactory(), this.getRuleFactory(), this.getDirectiveRenderer());
   }
 
   getImportBuilder() {

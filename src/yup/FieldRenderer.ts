@@ -24,15 +24,10 @@ export class FieldRenderer {
   ) {}
 
   public renderField(field: Field) {
-    const { graphQLFieldNode, node } = field.getData();
-    const generatedCodesForDirectives = this.directiveRenderer.render(
-      graphQLFieldNode.name.value,
-      graphQLFieldNode.directives ?? []
-    );
+    const { metadata, node } = field.getData();
+    const graphQLFieldNode = metadata.getGraphQLFieldNode();
 
-    const fieldMetadata = new FieldMetadata(generatedCodesForDirectives);
-
-    const rendered = node.render(this, fieldMetadata);
+    const rendered = node.render(this, metadata);
     const gen = isNonNullType(graphQLFieldNode.type) ? rendered : `${rendered}.optional()`;
 
     return indent(`${graphQLFieldNode.name.value}: ${gen}`, 2);

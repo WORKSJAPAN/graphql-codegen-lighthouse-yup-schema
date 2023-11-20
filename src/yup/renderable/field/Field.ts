@@ -2,16 +2,17 @@ import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
 import { FieldRenderer } from '../../FieldRenderer';
 import { Renderable } from '../Renderable';
+import { FieldMetadata } from './FieldMetadata';
 
 export class Field {
   constructor(
-    private readonly graphQLFieldNode: InputValueDefinitionNode | FieldDefinitionNode,
+    private readonly metadata: FieldMetadata,
     private readonly node: Renderable
   ) {}
 
   public getData() {
     return {
-      graphQLFieldNode: this.graphQLFieldNode,
+      metadata: this.metadata,
       node: this.node,
     };
   }
