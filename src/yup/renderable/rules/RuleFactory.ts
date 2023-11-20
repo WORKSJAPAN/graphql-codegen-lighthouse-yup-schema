@@ -8,16 +8,21 @@ import { SometimesRule } from './SometimesRule';
 export class RuleFactory {
   public constructor(
     private rules: Rules = {},
-    private ignoreRules: readonly string[] = []
+    private ignoreRules: readonly string[] = [],
+    private supportedArgumentName: string = 'apply'
   ) {}
 
-  public supports(directive: ConstDirectiveNode) {
-    return supportedDirectiveNames.includes(directive.name.value as SupportedDirectiveName);
+  public createFromDirectiveOrNull(fieldName: string, directive: ConstDirectiveNode | null) {
+    return directive ? this.createFromDirective(fieldName, directive) : this.createNullObject();
+  }
+
+  public createNullObject() {
+    return new CompositeRule([]);
   }
 
   public createFromDirective(fieldName: string, directive: ConstDirectiveNode) {
     const ruleStrings = (directive.arguments ?? [])
-      .filter(arg => arg.name.value === supportedArgumentName)
+      .filter(arg => arg.name.value === this.supportedArgumentName)
       .flatMap(({ value }) => {
         assertValueIsList(value, '`apply` argument must be a list of rules. For Example, ["integer", "max:255"].');
         return value.values.map(value => {
@@ -79,17 +84,6 @@ export const parse = (ruleString: string): LaravelValidationRule => {
     rawArgs,
   };
 };
-
-/**
- * GraphQL schema
- * ```graphql
- * input ExampleInput {
- *   email: String! @rules(apply: ["minLength:100", "email"])
- * }
- */
-const supportedDirectiveNames = ['rules', 'rulesForArray'] as const;
-type SupportedDirectiveName = (typeof supportedDirectiveNames)[number];
-const supportedArgumentName = 'apply';
 
 function assertValueIsList(value: ConstValueNode, message: string): asserts value is ConstListValueNode {
   if (value.kind !== Kind.LIST) {

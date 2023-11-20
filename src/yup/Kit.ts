@@ -3,7 +3,6 @@ import { GraphQLSchema } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { Visitor } from '../visitor';
-import { DirectiveRenderer } from './DirectiveRenderer';
 import { ConstExportTypeStrategy } from './exportTypeStrategies/ConstExportTypeStrategy';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { FunctionExportTypeStrategy } from './exportTypeStrategies/FunctionExportTypeStrategy';
@@ -77,10 +76,6 @@ export class Kit {
     return new ScalarRenderer(this.config.scalarSchemas, this.getVisitor());
   }
 
-  getDirectiveRenderer() {
-    return new DirectiveRenderer(this.getRuleFactory(), this.getRuleRenderer());
-  }
-
   getRuleFactory() {
     return new RuleFactory(this.config.rules, this.config.ignoreRules);
   }
@@ -98,7 +93,7 @@ export class Kit {
   }
 
   getFieldFactory() {
-    return new FieldFactory(this.getNodeFactory(), this.getRuleFactory(), this.getDirectiveRenderer());
+    return new FieldFactory(this.getNodeFactory(), this.getRuleFactory());
   }
 
   getImportBuilder() {

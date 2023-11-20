@@ -1,5 +1,3 @@
-import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
-
 import { FieldRenderer } from '../../FieldRenderer';
 import { Renderable } from '../Renderable';
 import { FieldMetadata } from './FieldMetadata';

@@ -1,6 +1,5 @@
-import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
+import { ConstDirectiveNode, FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
-import { DirectiveRenderer } from '../../DirectiveRenderer';
 import { NodeFactory } from '../NodeFactory';
 import { RuleFactory } from '../rules/RuleFactory';
 import { Field } from './Field';
@@ -9,15 +8,28 @@ import { FieldMetadata } from './FieldMetadata';
 export class FieldFactory {
   public constructor(
     private readonly nodeFactory: NodeFactory,
-    private readonly ruleFactory: RuleFactory,
-    private readonly directiveRenderer: DirectiveRenderer
+    private readonly ruleFactory: RuleFactory
   ) {}
 
   public create(graphQLFieldNode: InputValueDefinitionNode | FieldDefinitionNode): Field {
-    const aaa = this.directiveRenderer.createMany(graphQLFieldNode.name.value, graphQLFieldNode.directives ?? []);
+    const directives = graphQLFieldNode.directives ?? [];
+    const rulesDirective = findDirectiveByName(directives, 'rules');
+    const rulesForArrayDirective = findDirectiveByName(directives, 'rulesForArray');
+    const fieldName = graphQLFieldNode.name.value;
 
-    const metadata = new FieldMetadata(graphQLFieldNode, aaa.rules, aaa.rulesForArray);
+    const metadata = new FieldMetadata(
+      graphQLFieldNode,
+      this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesDirective ?? null),
+      this.ruleFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null)
+    );
 
     return new Field(metadata, this.nodeFactory.create(graphQLFieldNode.type));
   }
 }
+
+const supportedDirectiveNames = ['rules', 'rulesForArray'] as const;
+type SupportedDirectiveName = (typeof supportedDirectiveNames)[number];
+
+const findDirectiveByName = (directives: readonly ConstDirectiveNode[], name: SupportedDirectiveName) => {
+  return directives.find(directive => directive.name.value === name);
+};
