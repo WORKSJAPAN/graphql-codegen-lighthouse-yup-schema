@@ -5,8 +5,8 @@ import { isInput, isListType, isNamedType, isNonNullType } from '../../../graphq
 import { Visitor } from '../../../visitor';
 import { SchemaASTLazyNode } from './SchemaASTLazyNode';
 import { SchemaASTListNode } from './SchemaASTListNode';
-import { SchemaASTNamedTypeNode2 } from './SchemaASTNamedTypeNode2';
 import { SchemaASTNode } from './SchemaASTNode';
+import { SchemaASTNonScalarNamedTypeNode } from './SchemaASTNonScalarNamedTypeNode';
 import { SchemaASTNullNode } from './SchemaASTNullNode';
 import { SchemaASTScalarNode } from './SchemaASTScalarNode';
 
@@ -39,7 +39,7 @@ export class SchemaASTFactory {
     graphQLTypeNode: NamedTypeNode,
     isNonNull: boolean,
     isDefined: boolean
-  ): SchemaASTNamedTypeNode2 | SchemaASTScalarNode | SchemaASTLazyNode {
+  ): SchemaASTNonScalarNamedTypeNode | SchemaASTScalarNode | SchemaASTLazyNode {
     const graphQLTypeName = graphQLTypeNode.name.value;
     const kind = this.visitor.getKind(graphQLTypeName);
 
@@ -52,10 +52,10 @@ export class SchemaASTFactory {
       );
     }
 
-    const ret = new SchemaASTNamedTypeNode2({
+    const ret = new SchemaASTNonScalarNamedTypeNode({
       graphQLTypeName,
       convertedName: this.visitor.convertName(graphQLTypeName),
-      kind: this.visitor.getKind(graphQLTypeName),
+      kind,
       tsTypeName: this.visitor.getTypeScriptScalarType(graphQLTypeName, this.scalarDirection),
       isNonNull,
       isDefined,

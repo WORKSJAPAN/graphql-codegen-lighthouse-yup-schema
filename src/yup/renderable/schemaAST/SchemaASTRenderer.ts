@@ -7,7 +7,7 @@ import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
 import { SchemaASTLazyNode } from './SchemaASTLazyNode';
 import { SchemaASTListNode } from './SchemaASTListNode';
-import { SchemaASTNamedTypeNode2 } from './SchemaASTNamedTypeNode2';
+import { SchemaASTNonScalarNamedTypeNode } from './SchemaASTNonScalarNamedTypeNode';
 import { SchemaASTScalarNode } from './SchemaASTScalarNode';
 
 export class SchemaASTRenderer {
@@ -31,9 +31,9 @@ export class SchemaASTRenderer {
     }${isDefined ? '.defined()' : ''}`;
   }
 
-  public renderNamedType2(namedType: SchemaASTNamedTypeNode2, fieldMetadata: FieldMetadata): string {
+  public renderNonScalarNamedType(namedType: SchemaASTNonScalarNamedTypeNode, fieldMetadata: FieldMetadata): string {
     const { kind, isNonNull, isDefined } = namedType.getData();
-    const gen = this.generateNameNodeYupSchema(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
+    const gen = this.doRenderNonScalarNamedType(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
       const ret = `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
@@ -83,17 +83,14 @@ export class SchemaASTRenderer {
     return `yup.mixed()`;
   }
 
-  private generateNameNodeYupSchema(schemaASTNamedTypeNode2: SchemaASTNamedTypeNode2): string {
-    const { kind, convertedName } = schemaASTNamedTypeNode2.getData();
+  private doRenderNonScalarNamedType(schemaASTNonScalarNamedTypeNode: SchemaASTNonScalarNamedTypeNode): string {
+    const { kind, convertedName } = schemaASTNonScalarNamedTypeNode.getData();
     switch (kind) {
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
       case Kind.OBJECT_TYPE_DEFINITION:
       case Kind.UNION_TYPE_DEFINITION:
       case Kind.ENUM_TYPE_DEFINITION:
         return this.exportTypeStrategy.schemaEvaluation(`${convertedName}Schema`, kind);
-      case Kind.SCALAR_TYPE_DEFINITION:
-      case null:
-        throw new Error('to be deleted');
       default:
         return assertsNeverKind(kind);
     }
