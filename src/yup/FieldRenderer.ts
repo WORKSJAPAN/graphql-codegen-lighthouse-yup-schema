@@ -7,10 +7,10 @@ import { Visitor } from '../visitor';
 import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
 import { Field } from './renderable/field/Field';
 import { FieldMetadata } from './renderable/field/FieldMetadata';
-import { Lazy } from './renderable/Lazy';
-import { ListType } from './renderable/ListType';
-import { NamedType } from './renderable/NamedType';
 import { RuleRenderer } from './renderable/rules/RuleRenderer';
+import { ASTLazyNode } from './renderable/schemaAST/ASTLazyNode';
+import { ASTListNode } from './renderable/schemaAST/ASTListNode';
+import { ASTNamedTypeNode } from './renderable/schemaAST/ASTNamedTypeNode';
 import { ScalarRenderer } from './ScalarRenderer';
 
 export class FieldRenderer {
@@ -32,12 +32,12 @@ export class FieldRenderer {
     return indent(`${name}: ${gen}`, 2);
   }
 
-  public renderLazy(lazy: Lazy, fieldMetadata: FieldMetadata): string {
+  public renderLazy(lazy: ASTLazyNode, fieldMetadata: FieldMetadata): string {
     const { child } = lazy.getData();
     return `yup.lazy(() => ${child.render(this, fieldMetadata)})`;
   }
 
-  public renderList(list: ListType, fieldMetadata: FieldMetadata): string {
+  public renderList(list: ASTListNode, fieldMetadata: FieldMetadata): string {
     const { child, isNonNull, isDefined } = list.getData();
     const rendered = child.render(this, fieldMetadata);
 
@@ -46,7 +46,7 @@ export class FieldRenderer {
     }${isDefined ? '.defined()' : ''}`;
   }
 
-  public renderNamedType(namedType: NamedType, fieldMetadata: FieldMetadata): string {
+  public renderNamedType(namedType: ASTNamedTypeNode, fieldMetadata: FieldMetadata): string {
     const { namedTypeNode, isNonNull, isDefined } = namedType.getData();
     const gen =
       this.generateNameNodeYupSchema(namedTypeNode.name) + fieldMetadata.getData().rule.render(this.ruleRenderer);

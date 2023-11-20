@@ -1,17 +1,17 @@
 import { FieldRenderer } from '../../FieldRenderer';
-import { Renderable } from '../Renderable';
+import { ASTNode } from '../schemaAST/ASTNode';
 import { FieldMetadata } from './FieldMetadata';
 
 export class Field {
   constructor(
     private readonly metadata: FieldMetadata,
-    private readonly node: Renderable
+    private readonly typeSchema: ASTNode
   ) {}
 
   public getData() {
     return {
       metadata: this.metadata,
-      node: this.node,
+      node: this.typeSchema,
     };
   }
 

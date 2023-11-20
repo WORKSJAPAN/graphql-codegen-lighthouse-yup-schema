@@ -1,9 +1,9 @@
-import { FieldRenderer } from '../FieldRenderer';
+import { FieldRenderer } from '../../FieldRenderer';
+import { FieldMetadata } from '../field/FieldMetadata';
+import { ASTNode } from './ASTNode';
 import { AstTypeNode } from './AstTypeNode';
-import { FieldMetadata } from './field/FieldMetadata';
-import { Renderable } from './Renderable';
 
-export class Lazy implements Renderable {
+export class ASTLazyNode implements ASTNode {
   constructor(private readonly child: AstTypeNode) {}
 
   public getData() {

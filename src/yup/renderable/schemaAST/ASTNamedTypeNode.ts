@@ -1,11 +1,10 @@
 import { NamedTypeNode } from 'graphql';
 
-import { FieldRenderer } from '../FieldRenderer';
+import { FieldRenderer } from '../../FieldRenderer';
+import { FieldMetadata } from '../field/FieldMetadata';
 import { AstTypeNode } from './AstTypeNode';
-import { FieldMetadata } from './field/FieldMetadata';
-import { Renderable } from './Renderable';
 
-export class NamedType implements Renderable, AstTypeNode {
+export class ASTNamedTypeNode implements AstTypeNode {
   constructor(
     readonly namedTypeNode: NamedTypeNode,
     readonly isNonNull: boolean,
