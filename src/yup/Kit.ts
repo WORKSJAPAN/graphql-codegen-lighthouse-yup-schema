@@ -12,8 +12,9 @@ import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
 import { FieldFactory } from './renderable/field/FieldFactory';
 import { RuleASTFactory } from './renderable/ruleAST/RuleASTFactory';
-import { RuleRenderer } from './renderable/ruleAST/RuleRenderer';
+import { RuleASTRenderer } from './renderable/ruleAST/RuleASTRenderer';
 import { SchemaASTFactory } from './renderable/schemaAST/SchemaASTFactory';
+import { SchemaASTRenderer } from './renderable/schemaAST/SchemaASTRenderer';
 import { ScalarRenderer } from './ScalarRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
@@ -62,10 +63,14 @@ export class Kit {
   }
 
   getFieldRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new FieldRenderer(
+    return new FieldRenderer(this.getSchemaASTRenderer(scalarDirection));
+  }
+
+  getSchemaASTRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new SchemaASTRenderer(
       this.config,
       this.getVisitor(),
-      this.getRuleRenderer(),
+      this.getRuleASTRenderer(),
       this.getExportTypesStrategy(),
       this.getScalarRenderer(),
       scalarDirection
@@ -80,8 +85,8 @@ export class Kit {
     return new RuleASTFactory(this.config.rules, this.config.ignoreRules);
   }
 
-  getRuleRenderer() {
-    return new RuleRenderer();
+  getRuleASTRenderer() {
+    return new RuleASTRenderer();
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {

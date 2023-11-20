@@ -1,6 +1,6 @@
 import { RuleASTCompositeNode } from './RuleASTCompositeNode';
 import { RuleASTNode } from './RuleASTNode';
-import { RuleRenderer } from './RuleRenderer';
+import { RuleASTRenderer } from './RuleASTRenderer';
 
 // sometimes は特殊で、他の検証ルールを無視する必要があるため、コールバックで他の検証ルールを渡す形にする。
 export class RuleASTSometimesNode implements RuleASTNode {
@@ -16,7 +16,7 @@ export class RuleASTSometimesNode implements RuleASTNode {
     };
   }
 
-  public render(ruleRenderer: RuleRenderer): string {
+  public render(ruleRenderer: RuleASTRenderer): string {
     return ruleRenderer.renderSometimesRule(this);
   }
 }

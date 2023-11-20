@@ -1,5 +1,5 @@
 import { RuleASTNode } from './RuleASTNode';
-import { RuleRenderer } from './RuleRenderer';
+import { RuleASTRenderer } from './RuleASTRenderer';
 
 export class RuleASTCompositeNode implements RuleASTNode {
   public constructor(private readonly children: readonly RuleASTNode[]) {}
@@ -10,7 +10,7 @@ export class RuleASTCompositeNode implements RuleASTNode {
     };
   }
 
-  public render(ruleRenderer: RuleRenderer): string {
+  public render(ruleRenderer: RuleASTRenderer): string {
     return ruleRenderer.renderCompositeRule(this);
   }
 }

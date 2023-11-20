@@ -1,6 +1,5 @@
 import { NamedTypeNode } from 'graphql';
 
-import { FieldRenderer } from '../../FieldRenderer';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { SchemaASTTypeNode } from './SchemaASTTypeNode';
 
@@ -19,7 +18,7 @@ export class SchemaASTNamedTypeNode implements SchemaASTTypeNode {
     };
   }
 
-  public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
-    return fieldRenderer.renderNamedType(this, fieldMetadata);
+  public render(schemaASTRenderer: SchemaASTRenderer, fieldMetadata: FieldMetadata) {
+    return schemaASTRenderer.renderNamedType(this, fieldMetadata);
   }
 }

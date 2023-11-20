@@ -1,5 +1,5 @@
 import { RuleASTNode } from './RuleASTNode';
-import { RuleRenderer } from './RuleRenderer';
+import { RuleASTRenderer } from './RuleASTRenderer';
 
 export class RuleASTSingleNode implements RuleASTNode {
   public constructor(
@@ -14,7 +14,7 @@ export class RuleASTSingleNode implements RuleASTNode {
     };
   }
 
-  public render(ruleRenderer: RuleRenderer): string {
+  public render(ruleRenderer: RuleASTRenderer): string {
     return ruleRenderer.renderSingleRule(this);
   }
 }

@@ -1,5 +1,5 @@
-import { RuleRenderer } from './RuleRenderer';
+import { RuleASTRenderer } from './RuleASTRenderer';
 
 export interface RuleASTNode {
-  render(ruleRenderer: RuleRenderer): string;
+  render(ruleRenderer: RuleASTRenderer): string;
 }

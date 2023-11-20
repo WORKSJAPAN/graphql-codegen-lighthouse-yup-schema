@@ -1,6 +1,6 @@
-import { FieldRenderer } from '../../FieldRenderer';
 import { FieldMetadata } from '../field/FieldMetadata';
+import { SchemaASTRenderer } from './SchemaASTRenderer';
 
 export interface SchemaASTNode {
-  render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata): string;
+  render(schemaASTRenderer: SchemaASTRenderer, fieldMetadata: FieldMetadata): string;
 }

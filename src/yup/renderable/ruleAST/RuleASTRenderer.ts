@@ -2,7 +2,7 @@ import { RuleASTCompositeNode } from './RuleASTCompositeNode';
 import { RuleASTSingleNode } from './RuleASTSingleNode';
 import { RuleASTSometimesNode } from './RuleASTSometimesNode';
 
-export class RuleRenderer {
+export class RuleASTRenderer {
   public renderSingleRule(singleRule: RuleASTSingleNode): string {
     const { mappedName, rawArgs } = singleRule.getData();
     return `.${mappedName}(${rawArgs.map(codifyArgument).join(',')})`;

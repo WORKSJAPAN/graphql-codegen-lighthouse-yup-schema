@@ -1,6 +1,6 @@
-import { FieldRenderer } from '../../FieldRenderer';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { SchemaASTNode } from './SchemaASTNode';
+import { SchemaASTRenderer } from './SchemaASTRenderer';
 import { SchemaASTTypeNode } from './SchemaASTTypeNode';
 
 export class SchemaASTLazyNode implements SchemaASTNode {
@@ -12,7 +12,7 @@ export class SchemaASTLazyNode implements SchemaASTNode {
     };
   }
 
-  public render(fieldRenderer: FieldRenderer, fieldMetadata: FieldMetadata) {
-    return fieldRenderer.renderLazy(this, fieldMetadata);
+  public render(schemaASTRenderer: SchemaASTRenderer, fieldMetadata: FieldMetadata) {
+    return schemaASTRenderer.renderLazy(this, fieldMetadata);
   }
 }
