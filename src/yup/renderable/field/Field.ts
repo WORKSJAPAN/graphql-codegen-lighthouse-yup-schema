@@ -1,6 +1,6 @@
-import { FieldRenderer } from '../../FieldRenderer';
 import { SchemaASTNode } from '../schemaAST/SchemaASTNode';
 import { FieldMetadata } from './FieldMetadata';
+import { FieldRenderer } from './FieldRenderer';
 
 export class Field {
   constructor(

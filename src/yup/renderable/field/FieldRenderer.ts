@@ -1,7 +1,7 @@
 import { indent } from '@graphql-codegen/visitor-plugin-common';
 
-import { Field } from './renderable/field/Field';
-import { SchemaASTRenderer } from './renderable/schemaAST/SchemaASTRenderer';
+import { SchemaASTRenderer } from '../schemaAST/SchemaASTRenderer';
+import { Field } from './Field';
 
 export class FieldRenderer {
   constructor(private readonly schemaASTRenderer: SchemaASTRenderer) {}

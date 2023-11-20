@@ -1,7 +1,7 @@
 import { FieldDefinitionNode, InputValueDefinitionNode } from 'graphql';
 
-import { FieldRenderer } from './FieldRenderer';
 import { FieldFactory } from './renderable/field/FieldFactory';
+import { FieldRenderer } from './renderable/field/FieldRenderer';
 
 export class ShapeRenderer {
   constructor(
