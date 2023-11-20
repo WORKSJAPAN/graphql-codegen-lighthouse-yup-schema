@@ -6,20 +6,19 @@ import { renderLazy } from './utils';
 export class ListType implements Renderable, AstTypeNode {
   constructor(
     private readonly child: Renderable,
-    private readonly isNonNull: boolean
+    private readonly isNonNull: boolean,
+    private readonly isDefined: boolean
   ) {}
 
   public render(fieldMetadata: FieldMetadata) {
     const rendered = this.child.render(fieldMetadata);
-    // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
-    const arrayContent = `${rendered}.defined()`;
 
     const isChildLazy = this.child.shouldBeLazy(fieldMetadata);
-    const maybeLazy = isChildLazy ? renderLazy(arrayContent) : arrayContent;
+    const maybeLazy = isChildLazy ? renderLazy(rendered) : rendered;
 
     return `yup.array(${maybeLazy})${fieldMetadata.getGeneratedCodesForDirectives().rulesForArray}${
       this.isNonNull ? '.defined()' : '.nullable()'
-    }`;
+    }${this.isDefined ? '.defined()' : ''}`;
   }
 
   public shouldBeLazy(): boolean {

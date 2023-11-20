@@ -9,7 +9,8 @@ export class NamedType implements Renderable, AstTypeNode {
   constructor(
     readonly fieldRenderer: FieldRenderer,
     readonly namedTypeNode: NamedTypeNode,
-    readonly isNonNull: boolean
+    readonly isNonNull: boolean,
+    readonly isDefined: boolean
   ) {}
 
   public render(fieldMetadata: FieldMetadata) {
@@ -17,15 +18,18 @@ export class NamedType implements Renderable, AstTypeNode {
       this.fieldRenderer.generateNameNodeYupSchema(this.namedTypeNode.name) +
       fieldMetadata.getGeneratedCodesForDirectives().rules;
     if (this.isNonNull) {
-      return this.fieldRenderer.shouldEmitAsNotAllowEmptyString(this.namedTypeNode.name.value)
+      const ret = this.fieldRenderer.shouldEmitAsNotAllowEmptyString(this.namedTypeNode.name.value)
         ? `${gen}.defined().required()`
         : `${gen}.defined().nonNullable()`;
+      return this.isDefined ? `${ret}.defined()` : `${ret}`;
     }
     const typ = this.fieldRenderer.getVisitor().getType(this.namedTypeNode.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
-      return `${gen}`;
+      const ret = `${gen}`;
+      return this.isDefined ? `${ret}.defined()` : `${ret}`;
     }
-    return `${gen}.nullable()`;
+    const ret = `${gen}.nullable()`;
+    return this.isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
   public shouldBeLazy(): boolean {

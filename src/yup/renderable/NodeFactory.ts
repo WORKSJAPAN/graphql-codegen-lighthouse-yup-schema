@@ -14,22 +14,23 @@ export class NodeFactory {
     private readonly lazyTypes: readonly string[] = []
   ) {}
 
-  public create(typeNode: TypeNode): Renderable {
+  public create(typeNode: TypeNode, isDefined: boolean = false): Renderable {
     if (isNonNullType(typeNode)) {
-      return this.helper(typeNode.type, true);
+      return this.helper(typeNode.type, true, isDefined);
     }
-    return this.helper(typeNode, false);
+    return this.helper(typeNode, false, isDefined);
   }
 
-  private helper(typeNode: ListTypeNode | NamedTypeNode, isNonNull: boolean): Renderable {
+  private helper(typeNode: ListTypeNode | NamedTypeNode, isNonNull: boolean, isDefined: boolean): Renderable {
     if (isListType(typeNode)) {
-      return new ListType(this.create(typeNode.type), isNonNull);
+      // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
+      return new ListType(this.create(typeNode.type, true), isNonNull, isDefined);
     }
     if (isNamedType(typeNode)) {
       if (this.isLazy(typeNode)) {
-        return new Lazy(new NamedType(this.fieldRenderer, typeNode, isNonNull));
+        return new Lazy(new NamedType(this.fieldRenderer, typeNode, isNonNull, isDefined));
       }
-      return new NamedType(this.fieldRenderer, typeNode, isNonNull);
+      return new NamedType(this.fieldRenderer, typeNode, isNonNull, isDefined);
     }
     return new NullNode(typeNode);
   }
