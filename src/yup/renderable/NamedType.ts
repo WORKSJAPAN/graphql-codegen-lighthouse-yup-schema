@@ -23,6 +23,8 @@ export class NamedType implements Renderable, AstTypeNode {
         : `${gen}.defined().nonNullable()`;
       return this.isDefined ? `${ret}.defined()` : `${ret}`;
     }
+
+    // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
     const typ = this.fieldRenderer.getVisitor().getType(this.namedTypeNode.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       const ret = `${gen}`;
