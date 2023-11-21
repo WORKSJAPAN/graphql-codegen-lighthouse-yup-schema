@@ -1,14 +1,14 @@
 import { indent } from '@graphql-codegen/visitor-plugin-common';
 
-import { SchemaASTRenderer } from '../schemaAST/SchemaASTRenderer';
+import { TypeASTRenderer } from '../typeAST/TypeASTRenderer';
 import { Field } from './Field';
 
 export class FieldRenderer {
-  constructor(private readonly schemaASTRenderer: SchemaASTRenderer) {}
+  constructor(private readonly typeASTRenderer: TypeASTRenderer) {}
 
   public renderField(field: Field) {
     const { metadata, schema } = field.getData();
-    const renderedNode = schema.render(this.schemaASTRenderer, metadata);
+    const renderedNode = schema.render(this.typeASTRenderer, metadata);
 
     const { name } = metadata.getData();
     const gen = metadata.getData().isOptional ? `${renderedNode}.optional()` : renderedNode;

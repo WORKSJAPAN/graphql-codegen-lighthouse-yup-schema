@@ -1,8 +1,8 @@
 import { FieldMetadata } from '../field/FieldMetadata';
-import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
-import { SchemaASTRenderer } from './SchemaASTRenderer';
+import { TypeASTNamedTypeNode } from './TypeASTNamedTypeNode';
+import { TypeASTRenderer } from './TypeASTRenderer';
 
-export class SchemaASTScalarNode implements SchemaASTNamedTypeNode {
+export class TypeASTScalarNode implements TypeASTNamedTypeNode {
   constructor(
     private readonly graphQLTypeName: string,
     private readonly tsTypeName: string | null,
@@ -19,7 +19,7 @@ export class SchemaASTScalarNode implements SchemaASTNamedTypeNode {
     };
   }
 
-  public render(schemaASTRenderer: SchemaASTRenderer, fieldMetadata: FieldMetadata) {
+  public render(schemaASTRenderer: TypeASTRenderer, fieldMetadata: FieldMetadata) {
     return schemaASTRenderer.renderScalar(this, fieldMetadata);
   }
 }

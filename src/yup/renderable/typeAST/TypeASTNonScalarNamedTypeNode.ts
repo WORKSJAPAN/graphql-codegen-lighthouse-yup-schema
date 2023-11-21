@@ -2,10 +2,10 @@ import { Kind } from 'graphql';
 
 import { GetKindResult } from '../../../visitor';
 import { FieldMetadata } from '../field/FieldMetadata';
-import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
-import { SchemaASTRenderer } from './SchemaASTRenderer';
+import { TypeASTNamedTypeNode } from './TypeASTNamedTypeNode';
+import { TypeASTRenderer } from './TypeASTRenderer';
 
-export class SchemaASTNonScalarNamedTypeNode implements SchemaASTNamedTypeNode {
+export class TypeASTNonScalarNamedTypeNode implements TypeASTNamedTypeNode {
   constructor(
     private readonly data: Readonly<{
       graphQLTypeName: string;
@@ -23,7 +23,7 @@ export class SchemaASTNonScalarNamedTypeNode implements SchemaASTNamedTypeNode {
     };
   }
 
-  public render(schemaASTRenderer: SchemaASTRenderer, fieldMetadata: FieldMetadata) {
+  public render(schemaASTRenderer: TypeASTRenderer, fieldMetadata: FieldMetadata) {
     return schemaASTRenderer.renderNonScalarNamedType(this, fieldMetadata);
   }
 }

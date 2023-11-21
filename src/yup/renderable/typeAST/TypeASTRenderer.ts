@@ -5,24 +5,24 @@ import { isSpecifiedScalarName } from '../../../graphql';
 import { ExportTypeStrategy } from '../../exportTypeStrategies/ExportTypeStrategy';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
-import { SchemaASTLazyNode } from './SchemaASTLazyNode';
-import { SchemaASTListNode } from './SchemaASTListNode';
-import { SchemaASTNonScalarNamedTypeNode } from './SchemaASTNonScalarNamedTypeNode';
-import { SchemaASTScalarNode } from './SchemaASTScalarNode';
+import { TypeASTLazyNode } from './TypeASTLazyNode';
+import { TypeASTListNode } from './TypeASTListNode';
+import { TypeASTNonScalarNamedTypeNode } from './TypeASTNonScalarNamedTypeNode';
+import { TypeASTScalarNode } from './TypeASTScalarNode';
 
-export class SchemaASTRenderer {
+export class TypeASTRenderer {
   constructor(
     private readonly config: ValidationSchemaPluginConfig,
     private readonly ruleASTRenderer: RuleASTRenderer,
     private readonly exportTypeStrategy: ExportTypeStrategy
   ) {}
 
-  public renderLazy(lazy: SchemaASTLazyNode, fieldMetadata: FieldMetadata): string {
+  public renderLazy(lazy: TypeASTLazyNode, fieldMetadata: FieldMetadata): string {
     const { child } = lazy.getData();
     return `yup.lazy(() => ${child.render(this, fieldMetadata)})`;
   }
 
-  public renderList(list: SchemaASTListNode, fieldMetadata: FieldMetadata): string {
+  public renderList(list: TypeASTListNode, fieldMetadata: FieldMetadata): string {
     const { child, isNonNull, isDefined } = list.getData();
     const rendered = child.render(this, fieldMetadata);
 
@@ -31,7 +31,7 @@ export class SchemaASTRenderer {
     }${isDefined ? '.defined()' : ''}`;
   }
 
-  public renderNonScalarNamedType(namedType: SchemaASTNonScalarNamedTypeNode, fieldMetadata: FieldMetadata): string {
+  public renderNonScalarNamedType(namedType: TypeASTNonScalarNamedTypeNode, fieldMetadata: FieldMetadata): string {
     const { kind, isNonNull, isDefined } = namedType.getData();
     const gen = this.doRenderNonScalarNamedType(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
@@ -48,7 +48,7 @@ export class SchemaASTRenderer {
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
-  public renderScalar(scalarType: SchemaASTScalarNode, fieldMetadata: FieldMetadata): string {
+  public renderScalar(scalarType: TypeASTScalarNode, fieldMetadata: FieldMetadata): string {
     const { isNonNull, isDefined } = scalarType.getData();
 
     const gen = this.doRenderScalar(scalarType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
@@ -64,7 +64,7 @@ export class SchemaASTRenderer {
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }
 
-  private doRenderScalar(scalarType: SchemaASTScalarNode): string {
+  private doRenderScalar(scalarType: TypeASTScalarNode): string {
     const { graphQLTypeName, tsTypeName } = scalarType.getData();
     const scalarSchemas = this.config.scalarSchemas ?? {};
 
@@ -83,7 +83,7 @@ export class SchemaASTRenderer {
     return `yup.mixed()`;
   }
 
-  private doRenderNonScalarNamedType(schemaASTNonScalarNamedTypeNode: SchemaASTNonScalarNamedTypeNode): string {
+  private doRenderNonScalarNamedType(schemaASTNonScalarNamedTypeNode: TypeASTNonScalarNamedTypeNode): string {
     const { kind, convertedName } = schemaASTNonScalarNamedTypeNode.getData();
     switch (kind) {
       case Kind.INPUT_OBJECT_TYPE_DEFINITION:
@@ -96,7 +96,7 @@ export class SchemaASTRenderer {
     }
   }
 
-  private shouldEmitAsNotAllowEmptyString(schemaASTScalarType: SchemaASTScalarNode): boolean {
+  private shouldEmitAsNotAllowEmptyString(schemaASTScalarType: TypeASTScalarNode): boolean {
     if (this.config.notAllowEmptyString !== true) {
       return false;
     }

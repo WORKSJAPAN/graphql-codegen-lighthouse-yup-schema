@@ -2,13 +2,13 @@ import { ConstDirectiveNode, FieldDefinitionNode, InputValueDefinitionNode } fro
 
 import { isNonNullType } from '../../../graphql';
 import { RuleASTFactory } from '../ruleAST/RuleASTFactory';
-import { SchemaASTFactory } from '../schemaAST/SchemaASTFactory';
+import { TypeASTFactory } from '../typeAST/TypeASTFactory';
 import { Field } from './Field';
 import { FieldMetadata } from './FieldMetadata';
 
 export class FieldFactory {
   public constructor(
-    private readonly schemaASTFactory: SchemaASTFactory,
+    private readonly typeASTFactory: TypeASTFactory,
     private readonly ruleASTFactory: RuleASTFactory
   ) {}
 
@@ -25,7 +25,7 @@ export class FieldFactory {
       this.ruleASTFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null)
     );
 
-    return new Field(metadata, this.schemaASTFactory.create(graphQLFieldNode.type));
+    return new Field(metadata, this.typeASTFactory.create(graphQLFieldNode.type));
   }
 }
 
