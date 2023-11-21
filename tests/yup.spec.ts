@@ -281,17 +281,17 @@ describe('yup', () => {
       schema,
       [],
       {
-        notAllowEmptyString: true,
-        scalars: {
-          ID: 'string',
+        scalarSchemas: {
+          String: 'yup.string().required()',
+          ID: 'yup.string().required()',
         },
       },
       {}
     );
     const wantContains = [
       'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
-      'a: yup.string().defined().required(),',
-      'b: yup.string().defined().required(),',
+      'a: yup.string().required().defined().nonNullable(),',
+      'b: yup.string().required().defined().nonNullable(),',
       'c: yup.boolean().defined().nonNullable(),',
       'd: yup.number().defined().nonNullable(),',
       'e: yup.number().defined().nonNullable()',
@@ -315,9 +315,9 @@ describe('yup', () => {
       schema,
       [],
       {
-        notAllowEmptyString: true,
-        scalars: {
-          ID: 'string',
+        scalarSchemas: {
+          String: 'yup.string().required()',
+          ID: 'yup.string().required()',
         },
       },
       {}
@@ -325,7 +325,7 @@ describe('yup', () => {
     const wantContain = dedent`
     export function InputNestedSchema(): yup.ObjectSchema<InputNested> {
       return yup.object({
-        field: yup.string().defined().required()
+        field: yup.string().required().defined().nonNullable()
       }).strict()
     }`;
     expect(result.content).toContain(wantContain);

@@ -1,7 +1,6 @@
 import { Kind } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../../../config';
-import { isSpecifiedScalarName } from '../../../graphql';
 import { ExportTypeStrategy } from '../../exportTypeStrategies/ExportTypeStrategy';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
@@ -49,9 +48,7 @@ export class TypeASTRenderer {
     const gen = this.doRenderScalar(scalarType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
 
     if (isNonNull) {
-      const ret = this.shouldEmitAsNotAllowEmptyString(scalarType)
-        ? `${gen}.defined().required()`
-        : `${gen}.defined().nonNullable()`;
+      const ret = `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
     }
 
@@ -89,19 +86,6 @@ export class TypeASTRenderer {
       default:
         return assertsNeverKind(kind);
     }
-  }
-
-  private shouldEmitAsNotAllowEmptyString(schemaASTScalarType: TypeASTScalarNode): boolean {
-    if (this.config.notAllowEmptyString !== true) {
-      return false;
-    }
-
-    const { graphQLTypeName, tsTypeName } = schemaASTScalarType.getData();
-    if (!isSpecifiedScalarName(graphQLTypeName)) {
-      return false;
-    }
-
-    return tsTypeName === 'string';
   }
 }
 

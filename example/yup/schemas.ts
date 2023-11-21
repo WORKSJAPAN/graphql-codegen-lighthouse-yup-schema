@@ -31,9 +31,9 @@ export function AttributeInputSchema(): yup.ObjectSchema<AttributeInput> {
 
 export function ComponentInputSchema(): yup.ObjectSchema<ComponentInput> {
   return yup.object({
-    child: ComponentInputSchema().optional(),
-    childrens: yup.array(ComponentInputSchema().defined()).nullable().optional(),
-    event: EventInputSchema().optional(),
+    child: ComponentInputSchema().nullable().optional(),
+    childrens: yup.array(ComponentInputSchema().nullable().defined()).nullable().optional(),
+    event: EventInputSchema().nullable().optional(),
     name: yup.string().defined().nonNullable(),
     type: ButtonComponentTypeSchema.defined().nonNullable()
   }).strict()
@@ -41,7 +41,7 @@ export function ComponentInputSchema(): yup.ObjectSchema<ComponentInput> {
 
 export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownComponentInput> {
   return yup.object({
-    dropdownComponent: ComponentInputSchema().optional(),
+    dropdownComponent: ComponentInputSchema().nullable().optional(),
     getEvent: EventInputSchema().defined().nonNullable()
   }).strict()
 }
@@ -78,7 +78,7 @@ export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
 
 export function LayoutInputSchema(): yup.ObjectSchema<LayoutInput> {
   return yup.object({
-    dropdown: DropDownComponentInputSchema().optional()
+    dropdown: DropDownComponentInputSchema().nullable().optional()
   }).strict()
 }
 
