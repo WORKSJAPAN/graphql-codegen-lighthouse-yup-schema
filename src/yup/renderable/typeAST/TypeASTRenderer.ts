@@ -6,6 +6,7 @@ import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
 import { TypeASTListNode } from './TypeASTListNode';
 import { TypeASTNonScalarNamedTypeNode } from './TypeASTNonScalarNamedTypeNode';
+import { TypeASTNullability } from './TypeASTNullability';
 import { TypeASTScalarNode } from './TypeASTScalarNode';
 
 export class TypeASTRenderer {
@@ -16,38 +17,19 @@ export class TypeASTRenderer {
   ) {}
 
   public renderList(list: TypeASTListNode, fieldMetadata: FieldMetadata): string {
-    const { child, isNonNull, isDefined } = list.getData();
+    const { child } = list.getData();
     const rendered = child.render(this, fieldMetadata);
+    const renderedRule = fieldMetadata.getData().ruleForArray.render(this.ruleASTRenderer);
 
-    return `yup.array(${rendered})${fieldMetadata.getData().ruleForArray.render(this.ruleASTRenderer)}${
-      isNonNull ? '.defined()' : '.nullable()'
-    }${isDefined ? '.defined()' : ''}`;
+    return `yup.array(${rendered}.defined())${renderedRule}`;
   }
 
   public renderNonScalarNamedType(namedType: TypeASTNonScalarNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { isNonNull, isDefined } = namedType.getData();
-    const gen = this.doRenderNonScalarNamedType(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
-    if (isNonNull) {
-      const ret = `${gen}.defined().nonNullable()`;
-      return isDefined ? `${ret}.defined()` : `${ret}`;
-    }
-
-    const ret = `${gen}.nullable()`;
-    return isDefined ? `${ret}.defined()` : `${ret}`;
+    return this.doRenderNonScalarNamedType(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
   }
 
   public renderScalar(scalarType: TypeASTScalarNode, fieldMetadata: FieldMetadata): string {
-    const { isNonNull, isDefined } = scalarType.getData();
-
-    const gen = this.doRenderScalar(scalarType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
-
-    if (isNonNull) {
-      const ret = `${gen}.defined().nonNullable()`;
-      return isDefined ? `${ret}.defined()` : `${ret}`;
-    }
-
-    const ret = `${gen}.nullable()`;
-    return isDefined ? `${ret}.defined()` : `${ret}`;
+    return this.doRenderScalar(scalarType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
   }
 
   private doRenderScalar(scalarType: TypeASTScalarNode): string {
@@ -80,6 +62,13 @@ export class TypeASTRenderer {
       default:
         return assertsNeverKind(kind);
     }
+  }
+
+  public renderNullability(nullability: TypeASTNullability, fieldMetadata: FieldMetadata): string {
+    const { child, isNonNull } = nullability.getData();
+    const rendered = child.render(this, fieldMetadata);
+
+    return isNonNull ? `${rendered}.nonNullable()` : `${rendered}.nullable()`;
   }
 }
 

@@ -5,17 +5,13 @@ import { TypeASTRenderer } from './TypeASTRenderer';
 export class TypeASTScalarNode implements TypeASTNamedTypeNode {
   constructor(
     private readonly graphQLTypeName: string,
-    private readonly tsTypeName: string | null,
-    private readonly isNonNull: boolean,
-    private readonly isDefined: boolean
+    private readonly tsTypeName: string | null
   ) {}
 
   public getData() {
     return {
       graphQLTypeName: this.graphQLTypeName,
       tsTypeName: this.tsTypeName,
-      isNonNull: this.isNonNull,
-      isDefined: this.isDefined,
     };
   }
 

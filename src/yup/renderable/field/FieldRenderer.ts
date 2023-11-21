@@ -11,10 +11,14 @@ export class FieldRenderer {
     const renderedNode = type.render(this.typeASTRenderer, metadata);
 
     const { name } = metadata.getData();
-    const maybeOptional = metadata.getData().isOptional ? `${renderedNode}.optional()` : renderedNode;
-    const maybeLazy = type.requiresLazy() ? lazy(maybeOptional) : maybeOptional;
+    const maybeDefined = metadata.getData().isOptional ? renderedNode : defined(renderedNode);
+    const maybeLazy = type.requiresLazy() ? lazy(maybeDefined) : maybeDefined;
     return indent(`${name}: ${maybeLazy}`, 2);
   }
+}
+
+function defined(content: string): string {
+  return `${content}.defined()`;
 }
 
 function lazy(content: string): string {

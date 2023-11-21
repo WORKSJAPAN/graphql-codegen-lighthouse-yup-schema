@@ -12,8 +12,6 @@ export class TypeASTNonScalarNamedTypeNode implements TypeASTNode {
       tsTypeName: string | null;
       convertedName: string;
       kind: Exclude<GetKindResult, Kind.SCALAR_TYPE_DEFINITION | null>;
-      isNonNull: boolean;
-      isDefined: boolean;
       requiresLazy: boolean;
     }>
   ) {}
