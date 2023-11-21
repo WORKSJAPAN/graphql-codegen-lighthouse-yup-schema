@@ -4,7 +4,6 @@ import { ValidationSchemaPluginConfig } from '../../../config';
 import { ExportTypeStrategy } from '../../exportTypeStrategies/ExportTypeStrategy';
 import { FieldMetadata } from '../field/FieldMetadata';
 import { RuleASTRenderer } from '../ruleAST/RuleASTRenderer';
-import { TypeASTLazyNode } from './TypeASTLazyNode';
 import { TypeASTListNode } from './TypeASTListNode';
 import { TypeASTNonScalarNamedTypeNode } from './TypeASTNonScalarNamedTypeNode';
 import { TypeASTScalarNode } from './TypeASTScalarNode';
@@ -15,11 +14,6 @@ export class TypeASTRenderer {
     private readonly ruleASTRenderer: RuleASTRenderer,
     private readonly exportTypeStrategy: ExportTypeStrategy
   ) {}
-
-  public renderLazy(lazy: TypeASTLazyNode, fieldMetadata: FieldMetadata): string {
-    const { child } = lazy.getData();
-    return `yup.lazy(() => ${child.render(this, fieldMetadata)})`;
-  }
 
   public renderList(list: TypeASTListNode, fieldMetadata: FieldMetadata): string {
     const { child, isNonNull, isDefined } = list.getData();

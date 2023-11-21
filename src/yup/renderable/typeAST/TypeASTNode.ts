@@ -3,4 +3,5 @@ import { TypeASTRenderer } from './TypeASTRenderer';
 
 export interface TypeASTNode {
   render(typeASTRenderer: TypeASTRenderer, fieldMetadata: FieldMetadata): string;
+  requiresLazy(): boolean;
 }

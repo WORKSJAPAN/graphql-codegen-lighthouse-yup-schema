@@ -22,4 +22,8 @@ export class TypeASTScalarNode implements TypeASTNamedTypeNode {
   public render(schemaASTRenderer: TypeASTRenderer, fieldMetadata: FieldMetadata) {
     return schemaASTRenderer.renderScalar(this, fieldMetadata);
   }
+
+  public requiresLazy() {
+    return false;
+  }
 }

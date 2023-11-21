@@ -5,13 +5,13 @@ import { FieldRenderer } from './FieldRenderer';
 export class Field {
   constructor(
     private readonly metadata: FieldMetadata,
-    private readonly schema: TypeASTNode
+    private readonly type: TypeASTNode
   ) {}
 
   public getData() {
     return {
       metadata: this.metadata,
-      schema: this.schema,
+      type: this.type,
     };
   }
 

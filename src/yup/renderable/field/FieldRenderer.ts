@@ -7,11 +7,16 @@ export class FieldRenderer {
   constructor(private readonly typeASTRenderer: TypeASTRenderer) {}
 
   public renderField(field: Field) {
-    const { metadata, schema } = field.getData();
-    const renderedNode = schema.render(this.typeASTRenderer, metadata);
+    const { metadata, type } = field.getData();
+    const renderedNode = type.render(this.typeASTRenderer, metadata);
 
     const { name } = metadata.getData();
-    const gen = metadata.getData().isOptional ? `${renderedNode}.optional()` : renderedNode;
-    return indent(`${name}: ${gen}`, 2);
+    const maybeOptional = metadata.getData().isOptional ? `${renderedNode}.optional()` : renderedNode;
+    const maybeLazy = type.requiresLazy() ? lazy(maybeOptional) : maybeOptional;
+    return indent(`${name}: ${maybeLazy}`, 2);
   }
+}
+
+function lazy(content: string): string {
+  return `yup.lazy(() => ${content})`;
 }

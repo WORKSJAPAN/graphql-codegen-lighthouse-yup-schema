@@ -14,6 +14,7 @@ export class TypeASTNonScalarNamedTypeNode implements TypeASTNamedTypeNode {
       kind: Exclude<GetKindResult, Kind.SCALAR_TYPE_DEFINITION | null>;
       isNonNull: boolean;
       isDefined: boolean;
+      requiresLazy: boolean;
     }>
   ) {}
 
@@ -25,5 +26,9 @@ export class TypeASTNonScalarNamedTypeNode implements TypeASTNamedTypeNode {
 
   public render(schemaASTRenderer: TypeASTRenderer, fieldMetadata: FieldMetadata) {
     return schemaASTRenderer.renderNonScalarNamedType(this, fieldMetadata);
+  }
+
+  public requiresLazy() {
+    return this.data.requiresLazy;
   }
 }

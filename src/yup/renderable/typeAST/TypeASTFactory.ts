@@ -3,7 +3,6 @@ import { Kind, ListTypeNode, NamedTypeNode, TypeNode } from 'graphql';
 
 import { isInput, isListType, isNamedType, isNonNullType } from '../../../graphql';
 import { Visitor } from '../../../visitor';
-import { TypeASTLazyNode } from './TypeASTLazyNode';
 import { TypeASTListNode } from './TypeASTListNode';
 import { TypeASTNode } from './TypeASTNode';
 import { TypeASTNonScalarNamedTypeNode } from './TypeASTNonScalarNamedTypeNode';
@@ -38,7 +37,7 @@ export class TypeASTFactory {
     graphQLTypeNode: NamedTypeNode,
     isNonNull: boolean,
     isDefined: boolean
-  ): TypeASTNonScalarNamedTypeNode | TypeASTScalarNode | TypeASTLazyNode {
+  ): TypeASTNonScalarNamedTypeNode | TypeASTScalarNode {
     const graphQLTypeName = graphQLTypeNode.name.value;
     const kind = this.visitor.getKind(graphQLTypeName);
 
@@ -51,18 +50,18 @@ export class TypeASTFactory {
       );
     }
 
-    const ret = new TypeASTNonScalarNamedTypeNode({
+    return new TypeASTNonScalarNamedTypeNode({
       graphQLTypeName,
       convertedName: this.visitor.convertName(graphQLTypeName),
       kind,
       tsTypeName: this.visitor.getTypeScriptScalarType(graphQLTypeName, this.scalarDirection),
       isNonNull,
       isDefined,
+      requiresLazy: this.requiresLazy(graphQLTypeName),
     });
-    return this.isLazy(graphQLTypeName) ? new TypeASTLazyNode(ret) : ret;
   }
 
-  private isLazy(graphQLTypeName: string): boolean {
+  private requiresLazy(graphQLTypeName: string): boolean {
     return isInput(graphQLTypeName) && this.lazyTypes.includes(graphQLTypeName);
   }
 }
