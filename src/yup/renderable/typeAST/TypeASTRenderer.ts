@@ -32,18 +32,13 @@ export class TypeASTRenderer {
   }
 
   public renderNonScalarNamedType(namedType: TypeASTNonScalarNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    const { kind, isNonNull, isDefined } = namedType.getData();
+    const { isNonNull, isDefined } = namedType.getData();
     const gen = this.doRenderNonScalarNamedType(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
     if (isNonNull) {
       const ret = `${gen}.defined().nonNullable()`;
       return isDefined ? `${ret}.defined()` : `${ret}`;
     }
 
-    // オブジェクトを入力する場合はnullable()をつけない (undefined なことはある)
-    if (kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) {
-      const ret = `${gen}`;
-      return isDefined ? `${ret}.defined()` : `${ret}`;
-    }
     const ret = `${gen}.nullable()`;
     return isDefined ? `${ret}.defined()` : `${ret}`;
   }

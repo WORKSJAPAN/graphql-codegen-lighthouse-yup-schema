@@ -123,8 +123,8 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
-          'child: yup.lazy(() => NestedInputSchema()).optional(),',
-          'childrens: yup.array(yup.lazy(() => NestedInputSchema().defined())).nullable().optional()',
+          'child: yup.lazy(() => NestedInputSchema().nullable()).optional(),',
+          'childrens: yup.array(yup.lazy(() => NestedInputSchema().nullable().defined())).nullable().optional()',
         ],
         scalars: undefined,
         lazyTypes: ['NestedInput'],
