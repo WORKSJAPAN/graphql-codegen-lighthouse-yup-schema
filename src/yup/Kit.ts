@@ -70,7 +70,7 @@ export class Kit {
   }
 
   getRuleASTFactory() {
-    return new RuleASTFactory(this.config.rules, this.config.ignoreRules);
+    return new RuleASTFactory(this.config.rules, this.config.ignoreRules, this.config.lazyRules);
   }
 
   getRuleASTRenderer() {

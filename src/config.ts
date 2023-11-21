@@ -201,4 +201,8 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * a list of types to be lazy evaluated
    */
   lazyTypes?: string[];
+  /**
+   * a list of rules to be lazy evaluated
+   */
+  lazyRules?: string[];
 }

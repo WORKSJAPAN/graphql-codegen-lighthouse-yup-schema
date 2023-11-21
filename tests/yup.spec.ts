@@ -827,10 +827,10 @@ describe('yup', () => {
     const schema = buildSchema(/* GraphQL */ `
       input UserCreateInput {
         id: ID! @rules(apply: ["exists"])
-        name: String! @rules(apply: ["startsWith:Sir"])
+        name: String! @rules(apply: ["startsWith:Sir", "required_without:nickname"])
         age: Int! @rules(apply: ["min:0", "max:100"])
         keyword: String! @rules(apply: ["regex:/^[a-zA-Z0-9]+$/"])
-        nickname: String @rules(apply: ["max:10", "sometimes", "required"])
+        nickname: String @rules(apply: ["max:10", "sometimes", "required_without:name"])
       }
       directive @rules(apply: [String!]!) on INPUT_FIELD_DEFINITION
     `);
@@ -842,16 +842,17 @@ describe('yup', () => {
           regex: 'matches',
         },
         ignoreRules: ['exists'],
+        lazyRules: ['required_without'],
       },
       {}
     );
     const wantContains = [
       // User Create Input
       'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
-      'name: yup.string().startsWith("Sir").nonNullable().defined(),',
+      'name: yup.lazy(() => yup.string().startsWith("Sir").required_without("nickname").nonNullable().defined()),',
       'age: yup.number().min(0).max(100).nonNullable().defined()',
       'keyword: yup.string().matches(/^[a-zA-Z0-9]+$/).nonNullable().defined()',
-      'nickname: yup.string().sometimes("nickname", schema => schema.max(10).required()).nullable()',
+      'nickname: yup.lazy(() => yup.string().sometimes("nickname", schema => schema.max(10).required_without("name")).nullable())',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);

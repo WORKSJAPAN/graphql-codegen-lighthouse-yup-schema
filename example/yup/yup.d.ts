@@ -11,6 +11,7 @@ declare module 'yup' {
     varchar(): this;
     sometimes(str: string, callback: (schema: this) => this): this;
     startsWith(str: string): this;
+    required_without(str: string): this;
   }
 
   interface ArraySchema<TIn extends any[] | null | undefined, TContext, TDefault = undefined, TFlags extends Flags = ''>

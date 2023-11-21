@@ -15,6 +15,10 @@ export class Field {
     };
   }
 
+  public requiresLazy(): boolean {
+    return this.metadata.requiresLazy() || this.type.requiresLazy();
+  }
+
   public render(fieldRenderer: FieldRenderer) {
     return fieldRenderer.renderField(this);
   }
