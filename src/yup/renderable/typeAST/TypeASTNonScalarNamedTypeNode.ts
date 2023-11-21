@@ -2,10 +2,10 @@ import { Kind } from 'graphql';
 
 import { GetKindResult } from '../../../visitor';
 import { FieldMetadata } from '../field/FieldMetadata';
-import { TypeASTNamedTypeNode } from './TypeASTNamedTypeNode';
+import { TypeASTNode } from './TypeASTNode';
 import { TypeASTRenderer } from './TypeASTRenderer';
 
-export class TypeASTNonScalarNamedTypeNode implements TypeASTNamedTypeNode {
+export class TypeASTNonScalarNamedTypeNode implements TypeASTNode {
   constructor(
     private readonly data: Readonly<{
       graphQLTypeName: string;

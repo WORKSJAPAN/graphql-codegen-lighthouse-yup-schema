@@ -1,10 +1,10 @@
 import { FieldMetadata } from '../field/FieldMetadata';
+import { TypeASTNode } from './TypeASTNode';
 import { TypeASTRenderer } from './TypeASTRenderer';
-import { TypeASTTypeNode } from './TypeASTTypeNode';
 
-export class TypeASTListNode implements TypeASTTypeNode {
+export class TypeASTListNode implements TypeASTNode {
   constructor(
-    private readonly child: TypeASTTypeNode,
+    private readonly child: TypeASTNode,
     private readonly isNonNull: boolean,
     private readonly isDefined: boolean
   ) {}

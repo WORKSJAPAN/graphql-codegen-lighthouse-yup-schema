@@ -1,3 +1,3 @@
-import { TypeASTTypeNode } from './TypeASTTypeNode';
+import { TypeASTNode } from './TypeASTNode';
 
-export interface TypeASTNamedTypeNode extends TypeASTTypeNode {}
+export interface TypeASTNamedTypeNode extends TypeASTNode {}
