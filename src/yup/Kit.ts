@@ -13,9 +13,10 @@ import { FieldFactory } from './renderable/field/FieldFactory';
 import { FieldRenderer } from './renderable/field/FieldRenderer';
 import { RuleASTFactory } from './renderable/ruleAST/RuleASTFactory';
 import { RuleASTRenderer } from './renderable/ruleAST/RuleASTRenderer';
+import { ShapeFactory } from './renderable/shape/ShapeFactory';
+import { ShapeRenderer } from './renderable/shape/ShapeRenderer';
 import { TypeASTFactory } from './renderable/typeAST/TypeASTFactory';
 import { TypeASTRenderer } from './renderable/typeAST/TypeASTRenderer';
-import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
@@ -77,8 +78,12 @@ export class Kit {
     return new RuleASTRenderer();
   }
 
-  getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(this.getFieldRenderer(), this.getFieldFactory(scalarDirection));
+  getShapeRenderer() {
+    return new ShapeRenderer(this.getFieldRenderer());
+  }
+
+  getShapeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new ShapeFactory(this.getFieldFactory(scalarDirection));
   }
 
   getTypeASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
@@ -102,7 +107,8 @@ export class Kit {
       registry,
       this.getVisitor(),
       this.getExportTypesStrategy(),
-      this.getShapeRenderer('input')
+      this.getShapeFactory('input'),
+      this.getShapeRenderer()
     );
   }
 
@@ -112,7 +118,8 @@ export class Kit {
       this.getVisitor(),
       this.getWithObjectTypesSpec(),
       this.getExportTypesStrategy(),
-      this.getShapeRenderer('output'),
+      this.getShapeFactory('output'),
+      this.getShapeRenderer(),
       this.config.addUnderscoreToArgsType
     );
   }
