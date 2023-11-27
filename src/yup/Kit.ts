@@ -62,6 +62,10 @@ export class Kit {
     }
   }
 
+  getShapeRenderer() {
+    return new ShapeRenderer(this.getFieldRenderer());
+  }
+
   getFieldRenderer() {
     return new FieldRenderer(this.getTypeASTRenderer());
   }
@@ -70,28 +74,23 @@ export class Kit {
     return new TypeASTRenderer(this.config, this.getRuleASTRenderer(), this.getExportTypesStrategy());
   }
 
-  getRuleASTFactory() {
-    return new RuleASTFactory(this.config.rules, this.config.ignoreRules, this.config.lazyRules);
-  }
-
   getRuleASTRenderer() {
     return new RuleASTRenderer();
-  }
-
-  getShapeRenderer() {
-    return new ShapeRenderer(this.getFieldRenderer());
   }
 
   getShapeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
     return new ShapeFactory(this.getFieldFactory(scalarDirection));
   }
 
+  getFieldFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new FieldFactory(this.getTypeASTFactory(scalarDirection), this.getRuleASTFactory());
+  }
   getTypeASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
     return new TypeASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
   }
 
-  getFieldFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new FieldFactory(this.getTypeASTFactory(scalarDirection), this.getRuleASTFactory());
+  getRuleASTFactory() {
+    return new RuleASTFactory(this.config.rules, this.config.ignoreRules, this.config.lazyRules);
   }
 
   getImportBuilder() {
