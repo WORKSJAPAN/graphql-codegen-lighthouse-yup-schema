@@ -15,7 +15,7 @@ jobs:
       - name: asdf install
         uses: asdf-vm/actions/install@v3
       - name: Install dependencies
-        run: pnpm install --immutable
+        run: pnpm install
       - name: generate and type-check
         run: |
           pnpm generate
